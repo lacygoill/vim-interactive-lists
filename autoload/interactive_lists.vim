@@ -61,8 +61,16 @@ fu! interactive_lists#lmarks() abort "{{{1
                      \   "filename":  matchstr(v:val, ''\v^\s*\S+%(\s+\d+){2}\s+\zs.*''),
                      \ }')
 
+    "                                                      ┌─ it's important to expand the filename
+    "                                                      │  otherwise, if there's a tilde (for $HOME),
+    "                                                      │  clicking on the entry will load an empty
+    "                                                      │  buffer (with the right filepath; weird …)
+    "                                                      │
     let Global_mark = { item -> extend(item, { 'filename': expand(item.filename),
                                              \ 'text': item.pattern }) }
+                                             "              │
+                                             "              └─ we “abuse“ the `pattern` key
+                                             "                 to store the name of a mark
 
     let Local_mark  = { item -> extend(item, { 'filename': expand('%:p'),
                                              \ 'text': item.pattern.'    '.item.text }) }
