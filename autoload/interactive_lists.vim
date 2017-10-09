@@ -1,3 +1,8 @@
+if exists('g:autoloaded_interactive_lists')
+    finish
+endif
+let g:autoloaded_interactive_lists = 1
+
 fu! interactive_lists#largs() abort "{{{1
     let list = argv()
     call map(list, '{ "filename": v:val }')
