@@ -74,6 +74,10 @@ fu! interactive_lists#lmarks(bang) abort "{{{1
     let Global_mark = { item -> extend(item, { 'filename': expand(item.filename),
                                              \ 'text': item.mark_name }) }
 
+    "                           ┌─ `remove()` returns the removed item,
+    "                           │  but `extend()` does NOT return the added item;
+    "                           │  instead returns the new extended dictionary
+    "                           │
     let Local_mark  = { item -> extend(item, { 'filename': expand('%:p'),
                                              \ 'text': item.mark_name.'    '.item.text }) }
 
@@ -83,13 +87,20 @@ fu! interactive_lists#lmarks(bang) abort "{{{1
     \:                  '.(a:bang ? "Local_mark(v:val)" : "{}")
     \       )
 
-    if a:bang
-        for mark in marks
-            call remove(mark, 'mark_name')
-        endfor
-    else
-        call filter(marks, '!empty(v:val) && v:val.text !~# "\\d"')
+    " remove possible empty dictionaries  which may have appeared after previous
+    " `map()` invocation
+    call filter(marks, '!empty(v:val)')
+
+    " if no bang was given, we're only interested in global marks, so remove
+    " '0, …, '9 marks
+    if !a:bang
+        call filter(marks, 'v:val.text !~# "\\d"')
     endif
+
+    for mark in marks
+        " remove the `mark_name` key, it's not needed anymore
+        call remove(mark, 'mark_name')
+    endfor
 
     call setloclist(0, marks)
     call setloclist(0, [], 'a', { 'title': ':marks' })
