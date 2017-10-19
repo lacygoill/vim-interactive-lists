@@ -25,6 +25,11 @@ fu! interactive_lists#lchanges() abort "{{{1
                      \   "text":  matchstr(v:val, ''\v^%(\s+\d+){3}\s+\zs.*''),
                      \   "bufnr": bufnr(""),
                      \ }')
+
+    " all entries should show some text, otherwise it's impossible to know
+    " what changed, and they're useless
+    call filter(changes, '!empty(v:val.text)')
+
     call setloclist(0, changes)
     call setloclist(0, [], 'a', { 'title': ':changes' })
     lopen
