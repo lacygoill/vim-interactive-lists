@@ -55,7 +55,7 @@ fu! interactive_lists#lls(bang) abort "{{{1
     return ''
 endfu
 
-fu! interactive_lists#lmarks() abort "{{{1
+fu! interactive_lists#lmarks(bang) abort "{{{1
     let marks = split(execute('marks'), '\n')
     call filter(marks, 'v:val =~ ''\v^\s+\S+%(\s+\d+){2}''')
     call map(marks, '{
@@ -80,12 +80,16 @@ fu! interactive_lists#lmarks() abort "{{{1
     call map(marks,
     \'              filereadable(expand(v:val.filename))
     \?                  Global_mark(v:val)
-    \:                  Local_mark(v:val)
-    \'      )
+    \:                  '.(a:bang ? "Local_mark(v:val)" : "{}")
+    \       )
 
-    for mark in marks
-        call remove(mark, 'mark_name')
-    endfor
+    if a:bang
+        for mark in marks
+            call remove(mark, 'mark_name')
+        endfor
+    else
+        call filter(marks, '!empty(v:val) && v:val.text !~# "\\d"')
+    endif
 
     call setloclist(0, marks)
     call setloclist(0, [], 'a', { 'title': ':marks' })
