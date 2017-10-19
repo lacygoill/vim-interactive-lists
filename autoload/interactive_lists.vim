@@ -42,6 +42,12 @@ fu! interactive_lists#lls(bang) abort "{{{1
     " [{'bufnr': 2}, {'bufnr': 5}, {'bufnr': 6}, {'bufnr': 10}, …]
     call map(list, '{ "bufnr": v:val }')
 
+    for item in list
+        if empty(bufname(item.bufnr))
+            let item.text = '[No Name]'
+        endif
+    endfor
+
     call setloclist(0, list)
     call setloclist(0, [], 'a', { 'title': ':ls'.(a:bang ? '!' : '') })
     lopen
@@ -49,7 +55,7 @@ fu! interactive_lists#lls(bang) abort "{{{1
     if &ft ==# 'qf'
         " make output less noisy by hiding ending `||`
         setl cocu=nc cole=3
-        call matchadd('Conceal', '|\s*|\s*$', 0, -1, { 'conceal': 'x' })
+        call matchadd('Conceal', '\v\|\s*\|\s*%(\ze\[No Name\]\s*)?$', 0, -1, { 'conceal': 'x' })
     endif
 
     return ''
