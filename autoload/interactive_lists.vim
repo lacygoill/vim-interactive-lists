@@ -59,11 +59,11 @@ fu! interactive_lists#lmarks() abort "{{{1
     let marks = split(execute('marks'), '\n')
     call filter(marks, 'v:val =~ ''\v^\s+\S+%(\s+\d+){2}''')
     call map(marks, '{
-                     \   "pattern":   matchstr(v:val, ''\S\+''),
-                     \   "lnum":      matchstr(v:val, ''\v^\s*\S+\s+\zs\d+''),
-                     \   "col":       matchstr(v:val, ''\v^\s*\S+%(\s+\zs\d+){2}''),
-                     \   "text":      matchstr(v:val, ''\v^\s*\S+%(\s+\d+){2}\s+\zs.*''),
-                     \   "filename":  matchstr(v:val, ''\v^\s*\S+%(\s+\d+){2}\s+\zs.*''),
+                     \   "mark_name":  matchstr(v:val, ''\S\+''),
+                     \   "lnum":       matchstr(v:val, ''\v^\s*\S+\s+\zs\d+''),
+                     \   "col":        matchstr(v:val, ''\v^\s*\S+%(\s+\zs\d+){2}''),
+                     \   "text":       matchstr(v:val, ''\v^\s*\S+%(\s+\d+){2}\s+\zs.*''),
+                     \   "filename":   matchstr(v:val, ''\v^\s*\S+%(\s+\d+){2}\s+\zs.*''),
                      \ }')
 
     "                                                      ┌─ it's important to expand the filename
@@ -72,24 +72,25 @@ fu! interactive_lists#lmarks() abort "{{{1
     "                                                      │  buffer (with the right filepath; weird …)
     "                                                      │
     let Global_mark = { item -> extend(item, { 'filename': expand(item.filename),
-                                             \ 'text': item.pattern }) }
-                                             "              │
-                                             "              └─ we “abuse“ the `pattern` key
-                                             "                 to store the name of a mark
+                                             \ 'text': item.mark_name }) }
 
     let Local_mark  = { item -> extend(item, { 'filename': expand('%:p'),
-                                             \ 'text': item.pattern.'    '.item.text }) }
+                                             \ 'text': item.mark_name.'    '.item.text }) }
 
-    call map(marks,'
-    \               !filereadable(expand(v:val.filename))
-    \              ?     Local_mark(v:val)
-    \              :     Global_mark(v:val)
-    \              ')
+    call map(marks,
+    \'              filereadable(expand(v:val.filename))
+    \?                  Global_mark(v:val)
+    \:                  Local_mark(v:val)
+    \'      )
+
+    for mark in marks
+        call remove(mark, 'mark_name')
+    endfor
 
     call setloclist(0, marks)
     call setloclist(0, [], 'a', { 'title': ':marks' })
     lopen
-    if &ft == 'qf'
+    if &ft ==# 'qf'
         setl cocu=nc cole=3
         let pat = '\v^.{-}\zs\|.{-}\|\s*'
         call matchadd('Conceal', pat, 0, -1, { 'conceal': 'x' })
