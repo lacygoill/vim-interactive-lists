@@ -121,11 +121,16 @@ fu! interactive_lists#lmarks(bang) abort "{{{1
 endfu
 
 fu! interactive_lists#lreg() abort "{{{1
-    let registers = ['"', '+', '-', '*', '/', '=']
+    let registers = [ '"', '+', '-', '*', '/', '=' ]
     call extend(registers, map(range(48,57)+range(97,122), 'nr2char(v:val)'))
 
     call map(registers, '{ "filename": v:val }')
-    call map(registers, 'extend(v:val, { "text": substitute(getreg(v:val.filename), "\n", "^J", "g") })')
+    "          ignored for most registers, but useful for the expression register  ┐
+    "          allows to get the expression itself, not its current value          │
+    "          which could not exist anymore (ex: a:arg)                           │
+    "                                                                              │
+    call map(registers, 'extend(v:val, { "text": substitute(getreg(v:val.filename, 1), "\n", "^J", "g") })')
+
     call setloclist(0, registers)
     call setloclist(0, [], 'a', { 'title': ':reg' })
     lopen
