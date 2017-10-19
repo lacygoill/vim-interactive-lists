@@ -29,7 +29,7 @@ fu! interactive_lists#lchanges() abort "{{{1
     call setloclist(0, [], 'a', { 'title': ':changes' })
     lopen
     if &ft == 'qf'
-        norm coq
+        call qf#my_conceal('location')
     endif
     return ''
 endfu
@@ -55,7 +55,8 @@ fu! interactive_lists#lls(bang) abort "{{{1
     if &ft ==# 'qf'
         " make output less noisy by hiding ending `||`
         setl cocu=nc cole=3
-        call matchadd('Conceal', '\v\|\s*\|\s*%(\ze\[No Name\]\s*)?$', 0, -1, { 'conceal': 'x' })
+        let pat = '\v\|\s*\|\s*%(\ze\[No Name\]\s*)?$'
+        call matchadd('Conceal', pat, 0, -1, { 'conceal': 'x' })
     endif
 
     return ''
