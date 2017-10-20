@@ -129,20 +129,33 @@ fu! interactive_lists#lreg() abort "{{{1
     let registers = [ '"', '+', '-', '*', '/', '=' ]
     call extend(registers, map(range(48,57)+range(97,122), 'nr2char(v:val)'))
 
-    call map(registers, '{ "filename": v:val }')
-    "          ignored for most registers, but useful for the expression register  ┐
-    "          allows to get the expression itself, not its current value          │
-    "          which could not exist anymore (ex: a:arg)                           │
-    "                                                                              │
-    call map(registers, 'extend(v:val, { "text": substitute(getreg(v:val.filename, 1), "\n", "^J", "g") })')
+    " Do NOT use the `filename` key to store the name of the registers.
+    " Why?
+    " After executing `:LReg`, Vim would load buffers "a", "b", …
+    " They would pollute the buffer list (`:ls!`).
+    call map(registers, '{ "text": v:val }')
+
+    " We pass `1` as a 2nd argument to `getreg()`.
+    " It's ignored  for most registers,  but useful for the  expression register.
+    " It allows to get the expression  itself, not its current value which could
+    " not exist anymore (ex: a:arg)
+    call map(registers,
+    \'                  extend(v:val, {
+    \                                   "text": v:val.text
+    \.                                          "    "
+    \.                                          substitute(getreg(v:val.text, 1), "\n", "^J", "g")
+    \                                 })
+    \'      )
 
     call setloclist(0, registers)
     call setloclist(0, [], 'a', { 'title': ':reg' })
     lopen
     if &ft ==# 'qf'
         setl cocu=nc cole=3
-        let pat = '\v^\S\s+\zs\|\s*\|'
+        let pat = '\v^\s*\|\s*\|\s*'
         call matchadd('Conceal', pat, 0, -1, { 'conceal': 'x' })
+        let pat .= '\zs\S+'
+        call matchadd('qfFileName', pat, 0, -1)
     endif
     return ''
 endfu
