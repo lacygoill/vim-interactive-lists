@@ -77,6 +77,7 @@ fu! interactive_lists#ls(bang) abort "{{{1
         lopen
         " make output less noisy by hiding ending `||`
         call s:conceal('\v\|\s*\|\s*%(\ze\[No Name\]\s*)?$')
+        call matchadd('qfFileName', '\[No Name\]$', 0, -1)
     catch
         return 'echoerr '.string(v:exception)
     endtry
