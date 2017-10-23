@@ -93,10 +93,12 @@ fu! interactive_lists#lmarks(bang) abort "{{{1
     let Local_mark  = { item -> extend(item, { 'filename': expand('%:p'),
                                              \ 'text': item.mark_name.'    '.item.text }) }
 
-    call map(marks,
-    \'              filereadable(expand(v:val.filename))
-    \?                  Global_mark(v:val)
-    \:                  '.(a:bang ? "Local_mark(v:val)" : "{}")
+    call map(marks, printf(
+    \                      '%s ? %s : %s',
+    \                      'filereadable(expand(v:val.filename))',
+    \                      'Global_mark(v:val)',
+    \                      a:bang ? 'Local_mark(v:val)' : '{}'
+    \                     )
     \       )
 
     " remove possible empty dictionaries  which may have appeared after previous
@@ -139,13 +141,13 @@ fu! interactive_lists#lreg() abort "{{{1
     " It's ignored  for most registers,  but useful for the  expression register.
     " It allows to get the expression  itself, not its current value which could
     " not exist anymore (ex: a:arg)
-    call map(registers,
-    \'                  extend(v:val, {
-    \                                   "text": v:val.text
-    \.                                          "    "
-    \.                                          substitute(getreg(v:val.text, 1), "\n", "^J", "g")
-    \                                 })
-    \'      )
+    call map(registers, '
+    \                    extend(v:val, {
+    \                                    "text":  v:val.text
+    \                                            ."    "
+    \                                            .substitute(getreg(v:val.text, 1), "\n", "^J", "g")
+    \                                  })
+    \                   ')
 
     call setloclist(0, registers)
     call setloclist(0, [], 'a', { 'title': ':reg' })
