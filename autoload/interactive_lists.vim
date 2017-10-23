@@ -11,8 +11,7 @@ fu! interactive_lists#args() abort "{{{1
         call setloclist(0, [], 'a', { 'title': ':args' })
         lopen
         if &ft ==# 'qf'
-            setl cocu=nc cole=3
-            call matchadd('Conceal', '|\s*|\s*$', 0, -1, { 'conceal': 'x' })
+            call s:conceal('|\s*|\s*$')
         endif
     catch
         return 'echoerr '.string(v:exception)
@@ -36,14 +35,31 @@ fu! interactive_lists#changes() abort "{{{1
         call setloclist(0, changes)
         call setloclist(0, [], 'a', { 'title': ':changes' })
         lopen
-        if &ft == 'qf'
-            call qf#my_conceal('location')
+        if &ft ==# 'qf'
+            call s:conceal('^\v.{-}\|\s*\d+%(\s+col\s+\d+\s*)?\s*\|\s?')
         endif
     catch
         return 'echoerr '.string(v:exception)
     endtry
     return ''
 endfu
+
+fu! s:conceal(pat) abort "{{{1
+    setl cocu=nc cole=3
+    call matchadd('Conceal', a:pat, 0, -1, { 'conceal': 'x' })
+endfu
+
+" fu! s:format() abort "{{{1
+"     setl nowrap
+"     if !executable('column') || !executable('sed')
+"         return
+"     endif
+"     setl modifiable
+"     sil! exe "%!sed 's/|/\<c-a>|/1'"
+"     sil! exe "%!sed 's/|/\<c-a>|/2'"
+"     sil! exe "%!column -s '\<c-a>' -t"
+"     setl nomodifiable nomodified
+" endfu
 
 fu! interactive_lists#ls(bang) abort "{{{1
     try
@@ -66,9 +82,7 @@ fu! interactive_lists#ls(bang) abort "{{{1
 
         if &ft ==# 'qf'
             " make output less noisy by hiding ending `||`
-            setl cocu=nc cole=3
-            let pat = '\v\|\s*\|\s*%(\ze\[No Name\]\s*)?$'
-            call matchadd('Conceal', pat, 0, -1, { 'conceal': 'x' })
+            call s:conceal('\v\|\s*\|\s*%(\ze\[No Name\]\s*)?$')
         endif
     catch
         return 'echoerr '.string(v:exception)
@@ -130,9 +144,7 @@ fu! interactive_lists#marks(bang) abort "{{{1
         call setloclist(0, [], 'a', { 'title': ':marks' })
         lopen
         if &ft ==# 'qf'
-            setl cocu=nc cole=3
-            let pat = '\v^.{-}\zs\|.{-}\|\s*'
-            call matchadd('Conceal', pat, 0, -1, { 'conceal': 'x' })
+            call s:conceal('\v^.{-}\zs\|.{-}\|\s*')
         endif
     catch
         return 'echoerr '.string(v:exception)
@@ -167,11 +179,8 @@ fu! interactive_lists#reg() abort "{{{1
         call setloclist(0, [], 'a', { 'title': ':reg' })
         lopen
         if &ft ==# 'qf'
-            setl cocu=nc cole=3
-            let pat = '\v^\s*\|\s*\|\s*'
-            call matchadd('Conceal', pat, 0, -1, { 'conceal': 'x' })
-            let pat .= '\zs\S+'
-            call matchadd('qfFileName', pat, 0, -1)
+            call s:conceal('\v^\s*\|\s*\|\s*')
+            call  matchadd('qfFileName', '\v^\s*\|\s*\|\s*\zs\S+', 0, -1)
         endif
     catch
         return 'echoerr '.string(v:exception)
