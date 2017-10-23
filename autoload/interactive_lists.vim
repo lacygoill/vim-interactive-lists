@@ -40,6 +40,10 @@ fu! interactive_lists#changes() abort "{{{1
     return ''
 endfu
 
+fu! s:color_as_filename(pat) abort "{{{1
+    call  matchadd('qfFileName', a:pat, 0, -1)
+endfu
+
 fu! s:conceal(pat) abort "{{{1
     setl cocu=nc cole=3
     call matchadd('Conceal', a:pat, 0, -1, { 'conceal': 'x' })
@@ -77,7 +81,7 @@ fu! interactive_lists#ls(bang) abort "{{{1
         lopen
         " make output less noisy by hiding ending `||`
         call s:conceal('\v\|\s*\|\s*%(\ze\[No Name\]\s*)?$')
-        call matchadd('qfFileName', '\[No Name\]$', 0, -1)
+        call s:color_as_filename('\[No Name\]$')
     catch
         return 'echoerr '.string(v:exception)
     endtry
@@ -171,7 +175,7 @@ fu! interactive_lists#reg() abort "{{{1
         call setloclist(0, [], 'a', { 'title': ':reg' })
         lopen
         call s:conceal('\v^\s*\|\s*\|\s*')
-        call  matchadd('qfFileName', '\v^\s*\|\s*\|\s*\zs\S+', 0, -1)
+        call s:color_as_filename('\v^\s*\|\s*\|\s*\zs\S+')
     catch
         return 'echoerr '.string(v:exception)
     endtry
