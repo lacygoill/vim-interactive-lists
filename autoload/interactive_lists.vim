@@ -25,11 +25,11 @@ fu! interactive_lists#lchanges() abort "{{{1
         let changes = split(execute('changes'), '\n')
         call filter(changes, 'v:val =~ ''\v^%(\s+\d+){3}''')
         call map(changes, '{
-                         \   "lnum":  matchstr(v:val, ''\v^%(\s+\d+){1}\s+\zs\d+''),
-                         \   "col":   matchstr(v:val, ''\v^%(\s+\d+){2}\s+\zs\d+''),
-                         \   "text":  matchstr(v:val, ''\v^%(\s+\d+){3}\s+\zs.*''),
-                         \   "bufnr": bufnr(""),
-                         \ }')
+        \                    "lnum":  matchstr(v:val, ''\v^%(\s+\d+){1}\s+\zs\d+''),
+        \                    "col":   matchstr(v:val, ''\v^%(\s+\d+){2}\s+\zs\d+''),
+        \                    "text":  matchstr(v:val, ''\v^%(\s+\d+){3}\s+\zs.*''),
+        \                    "bufnr": bufnr(""),
+        \                  }')
         " all entries should show some text, otherwise it's impossible to know
         " what changed, and they're useless
         call filter(changes, '!empty(v:val.text)')
@@ -81,12 +81,12 @@ fu! interactive_lists#lmarks(bang) abort "{{{1
         let marks = split(execute('marks'), '\n')
         call filter(marks, 'v:val =~ ''\v^\s+\S+%(\s+\d+){2}''')
         call map(marks, '{
-                         \   "mark_name":  matchstr(v:val, ''\S\+''),
-                         \   "lnum":       matchstr(v:val, ''\v^\s*\S+\s+\zs\d+''),
-                         \   "col":        matchstr(v:val, ''\v^\s*\S+%(\s+\zs\d+){2}''),
-                         \   "text":       matchstr(v:val, ''\v^\s*\S+%(\s+\d+){2}\s+\zs.*''),
-                         \   "filename":   matchstr(v:val, ''\v^\s*\S+%(\s+\d+){2}\s+\zs.*''),
-                         \ }')
+        \                    "mark_name":  matchstr(v:val, ''\S\+''),
+        \                    "lnum":       matchstr(v:val, ''\v^\s*\S+\s+\zs\d+''),
+        \                    "col":        matchstr(v:val, ''\v^\s*\S+%(\s+\zs\d+){2}''),
+        \                    "text":       matchstr(v:val, ''\v^\s*\S+%(\s+\d+){2}\s+\zs.*''),
+        \                    "filename":   matchstr(v:val, ''\v^\s*\S+%(\s+\d+){2}\s+\zs.*''),
+        \                }')
 
         "                                                      ┌─ it's important to expand the filename
         "                                                      │  otherwise, if there's a tilde (for $HOME),
