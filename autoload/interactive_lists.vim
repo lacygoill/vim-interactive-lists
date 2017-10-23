@@ -5,8 +5,10 @@ let g:autoloaded_interactive_lists = 1
 
 fu! interactive_lists#args() abort "{{{1
     try
-        let list = argv()
-        call map(list, '{ "filename": v:val }')
+        let list = s:capture('args')
+        if empty(list)
+            return 'echoerr "No arguments"'
+        endif
         call setloclist(0, list)
         call setloclist(0, [], 'a', { 'title': ':args' })
         lopen
@@ -17,20 +19,45 @@ fu! interactive_lists#args() abort "{{{1
     return ''
 endfu
 
+fu! s:capture(cmd) abort "{{{1
+    if a:cmd ==# 'args'
+        let list = argv()
+        call map(list, '{ "filename": v:val }')
+
+    elseif a:cmd ==# 'changes'
+        let list = split(execute('changes'), '\n')
+        call filter(list, 'v:val =~ ''\v^%(\s+\d+){3}''')
+
+    elseif a:cmd ==# 'ls'
+        let list = range(1, bufnr('$'))
+
+    elseif a:cmd ==# 'marks'
+        let list = split(execute('marks'), '\n')
+        call filter(list, 'v:val =~ ''\v^\s+\S+%(\s+\d+){2}''')
+
+    elseif a:cmd ==# 'old'
+        let list = split(execute('old'), '\n')
+
+    elseif a:cmd ==# 'registers'
+        let list = [ '"', '+', '-', '*', '/', '=' ]
+        call extend(list, map(range(48,57)+range(97,122), 'nr2char(v:val)'))
+    endif
+    return list
+endfu
+
 fu! interactive_lists#changes() abort "{{{1
     try
-        let changes = split(execute('changes'), '\n')
-        call filter(changes, 'v:val =~ ''\v^%(\s+\d+){3}''')
-        call map(changes, '{
-        \                    "lnum":  matchstr(v:val, ''\v^%(\s+\d+){1}\s+\zs\d+''),
-        \                    "col":   matchstr(v:val, ''\v^%(\s+\d+){2}\s+\zs\d+''),
-        \                    "text":  matchstr(v:val, ''\v^%(\s+\d+){3}\s+\zs.*''),
-        \                    "bufnr": bufnr(""),
-        \                  }')
+        let list = s:capture('changes')
+        call map(list, '{
+        \                 "lnum":  matchstr(v:val, ''\v^%(\s+\d+){1}\s+\zs\d+''),
+        \                 "col":   matchstr(v:val, ''\v^%(\s+\d+){2}\s+\zs\d+''),
+        \                 "text":  matchstr(v:val, ''\v^%(\s+\d+){3}\s+\zs.*''),
+        \                 "bufnr": bufnr(""),
+        \               }')
         " all entries should show some text, otherwise it's impossible to know
         " what changed, and they're useless
-        call filter(changes, '!empty(v:val.text)')
-        call setloclist(0, changes)
+        call filter(list, '!empty(v:val.text)')
+        call setloclist(0, list)
         call setloclist(0, [], 'a', { 'title': ':changes' })
         lopen
         call s:conceal('^\v.{-}\|\s*\d+%(\s+col\s+\d+\s*)?\s*\|\s?')
@@ -63,8 +90,8 @@ endfu
 
 fu! interactive_lists#ls(bang) abort "{{{1
     try
-        " [1, 2, 3, …]
-        let list = range(1, bufnr('$'))
+        let list = s:capture('ls')
+
         " [2, 5, 6, 10, …]
         call filter(list, a:bang ? 'bufexists(v:val)' : 'buflisted(v:val)')
         " [{'bufnr': 2}, {'bufnr': 5}, {'bufnr': 6}, {'bufnr': 10}, …]
@@ -90,15 +117,14 @@ endfu
 
 fu! interactive_lists#marks(bang) abort "{{{1
     try
-        let marks = split(execute('marks'), '\n')
-        call filter(marks, 'v:val =~ ''\v^\s+\S+%(\s+\d+){2}''')
-        call map(marks, '{
-        \                    "mark_name":  matchstr(v:val, ''\S\+''),
-        \                    "lnum":       matchstr(v:val, ''\v^\s*\S+\s+\zs\d+''),
-        \                    "col":        matchstr(v:val, ''\v^\s*\S+%(\s+\zs\d+){2}''),
-        \                    "text":       matchstr(v:val, ''\v^\s*\S+%(\s+\d+){2}\s+\zs.*''),
-        \                    "filename":   matchstr(v:val, ''\v^\s*\S+%(\s+\d+){2}\s+\zs.*''),
-        \                }')
+        let list = s:capture('marks')
+        call map(list, '{
+        \                 "mark_name":  matchstr(v:val, ''\S\+''),
+        \                 "lnum":       matchstr(v:val, ''\v^\s*\S+\s+\zs\d+''),
+        \                 "col":        matchstr(v:val, ''\v^\s*\S+%(\s+\zs\d+){2}''),
+        \                 "text":       matchstr(v:val, ''\v^\s*\S+%(\s+\d+){2}\s+\zs.*''),
+        \                 "filename":   matchstr(v:val, ''\v^\s*\S+%(\s+\d+){2}\s+\zs.*''),
+        \               }')
 
         "                                                      ┌─ it's important to expand the filename
         "                                                      │  otherwise, if there's a tilde (for $HOME),
@@ -115,7 +141,7 @@ fu! interactive_lists#marks(bang) abort "{{{1
         let Local_mark  = { item -> extend(item, { 'filename': expand('%:p'),
                                                  \ 'text': item.mark_name.'    '.item.text }) }
 
-        call map(marks, printf(
+        call map(list, printf(
         \                      '%s ? %s : %s',
         \                      'filereadable(expand(v:val.filename))',
         \                      'Global_mark(v:val)',
@@ -125,21 +151,21 @@ fu! interactive_lists#marks(bang) abort "{{{1
 
         " remove possible empty dictionaries  which may have appeared after previous
         " `map()` invocation
-        call filter(marks, '!empty(v:val)')
+        call filter(list, '!empty(v:val)')
 
         " if no bang was given, we're only interested in global marks, so remove
         " '0, …, '9 marks
         if !a:bang
-            call filter(marks, 'v:val.text !~# "\\d"')
+            call filter(list, 'v:val.text !~# "\\d"')
         endif
 
-        for mark in marks
+        for mark in list
             " remove the `mark_name` key, it's not needed anymore
             call remove(mark, 'mark_name')
         endfor
 
-        call setloclist(0, marks)
-        call setloclist(0, [], 'a', { 'title': ':marks' })
+        call setloclist(0, list)
+        call setloclist(0, [], 'a', { 'title': ':Marks'.(a:bang ? '!' : '') })
         lopen
         call s:conceal('\v^.{-}\zs\|.{-}\|\s*')
     catch
@@ -148,30 +174,34 @@ fu! interactive_lists#marks(bang) abort "{{{1
     return ''
 endfu
 
+fu! interactive_lists#old() abort "{{{1
+    let list = s:capture('old')
+    return ''
+endfu
+
 fu! interactive_lists#reg() abort "{{{1
     try
-        let registers = [ '"', '+', '-', '*', '/', '=' ]
-        call extend(registers, map(range(48,57)+range(97,122), 'nr2char(v:val)'))
+        let list = s:capture('registers')
 
         " Do NOT use the `filename` key to store the name of the registers.
         " Why?
         " After executing `:LReg`, Vim would load buffers "a", "b", …
         " They would pollute the buffer list (`:ls!`).
-        call map(registers, '{ "text": v:val }')
+        call map(list, '{ "text": v:val }')
 
         " We pass `1` as a 2nd argument to `getreg()`.
         " It's ignored  for most registers,  but useful for the  expression register.
         " It allows to get the expression  itself, not its current value which could
         " not exist anymore (ex: a:arg)
-        call map(registers, '
-        \                    extend(v:val, {
-        \                                    "text":  v:val.text
-        \                                            ."    "
-        \                                            .substitute(getreg(v:val.text, 1), "\n", "^J", "g")
-        \                                  })
-        \                   ')
+        call map(list, '
+        \                extend(v:val, {
+        \                                "text":  v:val.text
+        \                                        ."    "
+        \                                        .substitute(getreg(v:val.text, 1), "\n", "^J", "g")
+        \                              })
+        \              ')
 
-        call setloclist(0, registers)
+        call setloclist(0, list)
         call setloclist(0, [], 'a', { 'title': ':reg' })
         lopen
         call s:conceal('\v^\s*\|\s*\|\s*')
