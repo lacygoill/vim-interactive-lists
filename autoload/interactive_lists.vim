@@ -10,9 +10,7 @@ fu! interactive_lists#args() abort "{{{1
         call setloclist(0, list)
         call setloclist(0, [], 'a', { 'title': ':args' })
         lopen
-        if &ft ==# 'qf'
-            call s:conceal('|\s*|\s*$')
-        endif
+        call s:conceal('|\s*|\s*$')
     catch
         return 'echoerr '.string(v:exception)
     endtry
@@ -35,9 +33,7 @@ fu! interactive_lists#changes() abort "{{{1
         call setloclist(0, changes)
         call setloclist(0, [], 'a', { 'title': ':changes' })
         lopen
-        if &ft ==# 'qf'
-            call s:conceal('^\v.{-}\|\s*\d+%(\s+col\s+\d+\s*)?\s*\|\s?')
-        endif
+        call s:conceal('^\v.{-}\|\s*\d+%(\s+col\s+\d+\s*)?\s*\|\s?')
     catch
         return 'echoerr '.string(v:exception)
     endtry
@@ -79,11 +75,8 @@ fu! interactive_lists#ls(bang) abort "{{{1
         call setloclist(0, list)
         call setloclist(0, [], 'a', { 'title': ':ls'.(a:bang ? '!' : '') })
         lopen
-
-        if &ft ==# 'qf'
-            " make output less noisy by hiding ending `||`
-            call s:conceal('\v\|\s*\|\s*%(\ze\[No Name\]\s*)?$')
-        endif
+        " make output less noisy by hiding ending `||`
+        call s:conceal('\v\|\s*\|\s*%(\ze\[No Name\]\s*)?$')
     catch
         return 'echoerr '.string(v:exception)
     endtry
@@ -143,9 +136,7 @@ fu! interactive_lists#marks(bang) abort "{{{1
         call setloclist(0, marks)
         call setloclist(0, [], 'a', { 'title': ':marks' })
         lopen
-        if &ft ==# 'qf'
-            call s:conceal('\v^.{-}\zs\|.{-}\|\s*')
-        endif
+        call s:conceal('\v^.{-}\zs\|.{-}\|\s*')
     catch
         return 'echoerr '.string(v:exception)
     endtry
@@ -178,10 +169,8 @@ fu! interactive_lists#reg() abort "{{{1
         call setloclist(0, registers)
         call setloclist(0, [], 'a', { 'title': ':reg' })
         lopen
-        if &ft ==# 'qf'
-            call s:conceal('\v^\s*\|\s*\|\s*')
-            call  matchadd('qfFileName', '\v^\s*\|\s*\|\s*\zs\S+', 0, -1)
-        endif
+        call s:conceal('\v^\s*\|\s*\|\s*')
+        call  matchadd('qfFileName', '\v^\s*\|\s*\|\s*\zs\S+', 0, -1)
     catch
         return 'echoerr '.string(v:exception)
     endtry
