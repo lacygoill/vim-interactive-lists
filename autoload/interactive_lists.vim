@@ -3,7 +3,7 @@ if exists('g:autoloaded_interactive_lists')
 endif
 let g:autoloaded_interactive_lists = 1
 
-fu! interactive_lists#largs() abort "{{{1
+fu! interactive_lists#args() abort "{{{1
     try
         let list = argv()
         call map(list, '{ "filename": v:val }')
@@ -20,7 +20,7 @@ fu! interactive_lists#largs() abort "{{{1
     return ''
 endfu
 
-fu! interactive_lists#lchanges() abort "{{{1
+fu! interactive_lists#changes() abort "{{{1
     try
         let changes = split(execute('changes'), '\n')
         call filter(changes, 'v:val =~ ''\v^%(\s+\d+){3}''')
@@ -45,7 +45,7 @@ fu! interactive_lists#lchanges() abort "{{{1
     return ''
 endfu
 
-fu! interactive_lists#lls(bang) abort "{{{1
+fu! interactive_lists#ls(bang) abort "{{{1
     try
         " [1, 2, 3, …]
         let list = range(1, bufnr('$'))
@@ -76,7 +76,7 @@ fu! interactive_lists#lls(bang) abort "{{{1
     return ''
 endfu
 
-fu! interactive_lists#lmarks(bang) abort "{{{1
+fu! interactive_lists#marks(bang) abort "{{{1
     try
         let marks = split(execute('marks'), '\n')
         call filter(marks, 'v:val =~ ''\v^\s+\S+%(\s+\d+){2}''')
@@ -140,7 +140,7 @@ fu! interactive_lists#lmarks(bang) abort "{{{1
     return ''
 endfu
 
-fu! interactive_lists#lreg() abort "{{{1
+fu! interactive_lists#reg() abort "{{{1
     try
         let registers = [ '"', '+', '-', '*', '/', '=' ]
         call extend(registers, map(range(48,57)+range(97,122), 'nr2char(v:val)'))
