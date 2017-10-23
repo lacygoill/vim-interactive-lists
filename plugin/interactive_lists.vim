@@ -10,7 +10,6 @@ let g:loaded_interactive_lists = 1
 " :g/^fu/#
 "        ^
 " :jumps
-" :oldfiles
 " :tags, :tselect
 " :undolist
 "

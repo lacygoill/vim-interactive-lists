@@ -19,7 +19,7 @@ fu! s:capture(cmd) abort "{{{1
         let list = split(execute('marks'), '\n')
         call filter(list, 'v:val =~ ''\v^\s+\S+%(\s+\d+){2}''')
 
-    elseif a:cmd ==# 'old'
+    elseif a:cmd ==# 'oldfiles'
         let list = split(execute('old'), '\n')
 
     elseif a:cmd ==# 'registers'
@@ -106,6 +106,12 @@ fu! s:convert(output, cmd, bang) abort "{{{1
             call remove(mark, 'mark_name')
         endfor
 
+    elseif a:cmd ==# 'oldfiles'
+        call map(a:output, '{
+        \                     "text"     : matchstr(v:val, ''\v^\d+\ze:\s.*''),
+        \                     "filename" : matchstr(v:val, ''\v^\d+:\s\zs.*''),
+        \                   }')
+
     elseif a:cmd ==# 'registers'
         " Do NOT use the `filename` key to store the name of the registers.
         " Why?
@@ -147,6 +153,7 @@ fu! interactive_lists#main(cmd, bang) abort "{{{1
         \           'changes'   : '^\v.{-}\|\s*\d+%(\s+col\s+\d+\s*)?\s*\|\s?',
         \           'ls'        : '\v\|\s*\|\s*%(\ze\[No Name\]\s*)?$',
         \           'marks'     : '\v^.{-}\zs\|.{-}\|\s*',
+        \           'oldfiles'  : '|\s*|\s*',
         \           'registers' : '\v^\s*\|\s*\|\s*',
         \         }[a:cmd]
 
