@@ -20,22 +20,25 @@ let g:loaded_interactive_lists = 1
 " After capturing output of `:jumps`, how  to distinguish a path to a file, from
 " a text in the current buffer describing a path to a file.
 
+" FIXME:
+" g:c → coN
+
 " Commands {{{1
 
-com!       -bar  LArgs      exe interactive_lists#args()
-com!       -bar  LChanges   exe interactive_lists#changes()
-com! -bang -bar  LLs        exe interactive_lists#ls(<bang>0)
-com! -bang -bar  LMarks     exe interactive_lists#marks(<bang>0)
-com!       -bar  LOld       exe interactive_lists#old()
-com!       -bar  LReg       exe interactive_lists#reg()
+com!       -bar  Largs      exe interactive_lists#main('args', 0)
+com!       -bar  Lchanges   exe interactive_lists#main('changes', 0)
+com! -bang -bar  Lls        exe interactive_lists#main('ls', <bang>0)
+com! -bang -bar  Lmarks     exe interactive_lists#main('marks', <bang>0)
+com!       -bar  Loldfiles  exe interactive_lists#main('oldfiles', 0)
+com!       -bar  Lregisters exe interactive_lists#main('registers', 0)
 
 " Mappings {{{1
 
-nno <silent>    g:a    :<c-u>LArgs<cr>
-nno <silent>    g:c    :<c-u>LChanges<cr>
-nno <silent>    g:l    :<c-u>LLs<cr>
-nno <silent>    g:L    :<c-u>LLs!<cr>
-nno <silent>    g:m    :<c-u>LMarks<cr>
-nno <silent>    g:M    :<c-u>LMarks!<cr>
-nno <silent>    g:o    :<c-u>LOld<cr>
-nno <silent>    g:r    :<c-u>LReg<cr>
+nno <silent>    g:a    :<c-u>Largs<cr>
+nno <silent>    g:c    :<c-u>Lchanges<cr>
+nno <silent>    g:l    :<c-u>Lls<cr>
+nno <silent>    g:L    :<c-u>Lls!<cr>
+nno <silent>    g:m    :<c-u>Lmarks<cr>
+nno <silent>    g:M    :<c-u>Lmarks!<cr>
+nno <silent>    g:o    :<c-u>Loldfiles<cr>
+nno <silent>    g:r    :<c-u>Lregisters<cr>
