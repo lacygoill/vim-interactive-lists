@@ -41,3 +41,5 @@ nno <silent>    g:m    :<c-u>Lmarks<cr>
 nno <silent>    g:M    :<c-u>Lmarks!<cr>
 nno <silent>    g:o    :<c-u>Loldfiles<cr>
 nno <silent>    g:r    :<c-u>Lregisters<cr>
+
+cno <expr> <c-\>n interactive_lists#main('number', 0)

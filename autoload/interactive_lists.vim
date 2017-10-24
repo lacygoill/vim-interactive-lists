@@ -109,7 +109,7 @@ fu! s:convert(output, cmd, bang) abort "{{{1
     elseif a:cmd ==# 'oldfiles'
         call map(a:output, '{
         \                     "text"     : matchstr(v:val, ''\v^\d+\ze:\s.*''),
-        \                     "filename" : matchstr(v:val, ''\v^\d+:\s\zs.*''),
+        \                     "filename" : expand(matchstr(v:val, ''\v^\d+:\s\zs.*'')),
         \                   }')
 
     elseif a:cmd ==# 'registers'
