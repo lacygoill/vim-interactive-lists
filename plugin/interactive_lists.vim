@@ -38,4 +38,8 @@ nno <silent>    g:M    :<c-u>Lmarks!<cr>
 nno <silent>    g:o    :<c-u>Loldfiles<cr>
 nno <silent>    g:r    :<c-u>Lregisters<cr>
 
+" Can't use <expr>, because even though  we can capture `getcmdline()`, we don't
+" seem to be able to capture its output (`execute(getcmdline(), '')`).
+" Maybe because  the display is locked,  and `execute()` needs the  output to be
+" displayed…
 cno <c-\>n <c-\>einteractive_lists#main('number', 0)<cr>

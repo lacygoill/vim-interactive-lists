@@ -21,7 +21,7 @@ fu! s:capture(cmd) abort "{{{1
 
     elseif a:cmd ==# 'number'
         let pos = getpos('.')
-        let list = split(execute('keepj exe getcmdline()', ''), '\n')
+        let list = split(execute('keepj '.getcmdline(), ''), '\n')
         call setpos('.', pos)
 
     elseif a:cmd ==# 'oldfiles'
@@ -152,8 +152,12 @@ fu! interactive_lists#main(cmd, bang) abort "{{{1
         let output = s:capture(a:cmd)
         let list   = s:convert(output, a:cmd, a:bang ? 1 : 0)
 
-        if empty(list) && a:cmd ==# 'args'
-            return 'echoerr "No arguments"'
+        if empty(list)
+            return a:cmd ==# 'args'
+            \?         'echoerr "No arguments"'
+            \:     a:cmd ==# 'number'
+            \?         getcmdline()
+            \:         'echoerr "No output"'
         endif
 
         call setloclist(0, list)
@@ -169,7 +173,9 @@ fu! interactive_lists#main(cmd, bang) abort "{{{1
             call s:open_qf(a:cmd)
         endif
     catch
-        return 'echoerr '.string(v:exception)
+        return a:cmd ==# 'number'
+        \?         getcmdline()
+        \:         'echoerr '.string(v:exception)
     endtry
     return ''
 endfu
