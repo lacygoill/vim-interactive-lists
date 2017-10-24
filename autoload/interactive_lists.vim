@@ -158,8 +158,10 @@ fu! interactive_lists#main(cmd, bang) abort "{{{1
 
         call setloclist(0, list)
         call setloclist(0, [], 'a', { 'title': a:cmd ==# 'marks'
-        \                                      ?   ':Marks' .(a:bang ? '!' : '')
-        \                                      :   ':'.a:cmd.(a:bang ? '!' : '')})
+        \                                    ?     ':Marks' .(a:bang ? '!' : '')
+        \                                    : a:cmd ==# 'number'
+        \                                    ?     ':'.getcmdline()
+        \                                    :     ':'.a:cmd.(a:bang ? '!' : '')})
 
         if a:cmd ==# 'number'
             call timer_start(0, {-> s:open_qf('number') + feedkeys("\e", 'in')})

@@ -10,15 +10,13 @@ let g:loaded_interactive_lists = 1
 " :jumps
 " :tags, :tselect
 " :undolist
-"
+
+" TODO:
 " replace ^J with a real linefeed, so that we can copy the register faithfully; possible?
 
 " FIXME:
 " After capturing output of `:jumps`, how  to distinguish a path to a file, from
 " a text in the current buffer describing a path to a file.
-
-" FIXME:
-" g:c → coN
 
 " Commands {{{1
 
