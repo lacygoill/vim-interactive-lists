@@ -7,8 +7,6 @@ let g:loaded_interactive_lists = 1
 "
 " :clist :llist (with all possible syntaxes)
 " :dlist :ilist
-" :g/^fu/#
-"        ^
 " :jumps
 " :tags, :tselect
 " :undolist
@@ -42,4 +40,4 @@ nno <silent>    g:M    :<c-u>Lmarks!<cr>
 nno <silent>    g:o    :<c-u>Loldfiles<cr>
 nno <silent>    g:r    :<c-u>Lregisters<cr>
 
-cno <expr> <c-\>n interactive_lists#main('number', 0)
+cno <c-\>n <c-\>einteractive_lists#main('number', 0)<cr>

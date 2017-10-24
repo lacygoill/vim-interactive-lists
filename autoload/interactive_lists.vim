@@ -19,6 +19,11 @@ fu! s:capture(cmd) abort "{{{1
         let list = split(execute('marks'), '\n')
         call filter(list, 'v:val =~ ''\v^\s+\S+%(\s+\d+){2}''')
 
+    elseif a:cmd ==# 'number'
+        let pos = getpos('.')
+        let list = split(execute('keepj exe getcmdline()', ''), '\n')
+        call setpos('.', pos)
+
     elseif a:cmd ==# 'oldfiles'
         let list = split(execute('old'), '\n')
 
@@ -106,6 +111,13 @@ fu! s:convert(output, cmd, bang) abort "{{{1
             call remove(mark, 'mark_name')
         endfor
 
+    elseif a:cmd ==# 'number'
+        call map(a:output, '{
+        \                     "filename" : expand("%:p"),
+        \                     "lnum"     : matchstr(v:val, ''\v^\s*\zs\d+''),
+        \                     "text"     : matchstr(v:val, ''\v^\s*\d+\s\zs.*''),
+        \                   }')
+
     elseif a:cmd ==# 'oldfiles'
         call map(a:output, '{
         \                     "text"     : matchstr(v:val, ''\v^\d+\ze:\s.*''),
@@ -149,24 +161,33 @@ fu! interactive_lists#main(cmd, bang) abort "{{{1
         \                                      ?   ':Marks' .(a:bang ? '!' : '')
         \                                      :   ':'.a:cmd.(a:bang ? '!' : '')})
 
-        lopen
-        let pat = {
-        \           'args'      : '|\s*|\s*$',
-        \           'changes'   : '^\v.{-}\|\s*\d+%(\s+col\s+\d+\s*)?\s*\|\s?',
-        \           'ls'        : '\v\|\s*\|\s*%(\ze\[No Name\]\s*)?$',
-        \           'marks'     : '\v^.{-}\zs\|.{-}\|\s*',
-        \           'oldfiles'  : '|\s*|\s*',
-        \           'registers' : '\v^\s*\|\s*\|\s*',
-        \         }[a:cmd]
-
-        call s:conceal(pat)
-        if a:cmd ==# 'ls'
-            call s:color_as_filename('\[No Name\]$')
-        elseif a:cmd ==# 'registers'
-            call s:color_as_filename('\v^\s*\|\s*\|\s*\zs\S+')
+        if a:cmd ==# 'number'
+            call timer_start(0, {-> s:open_qf('number') + feedkeys("\e", 'in')})
+        else
+            call s:open_qf(a:cmd)
         endif
     catch
         return 'echoerr '.string(v:exception)
     endtry
     return ''
+endfu
+
+fu! s:open_qf(cmd) abort
+    lopen
+    let pat = {
+    \           'args'      : '|\s*|\s*$',
+    \           'changes'   : '^\v.{-}\|\s*\d+%(\s+col\s+\d+\s*)?\s*\|\s?',
+    \           'ls'        : '\v\|\s*\|\s*%(\ze\[No Name\]\s*)?$',
+    \           'marks'     : '\v^.{-}\zs\|.{-}\|\s*',
+    \           'number'    : '.*|\s*\d\+\s*|\s\?',
+    \           'oldfiles'  : '|\s*|\s*',
+    \           'registers' : '\v^\s*\|\s*\|\s*',
+    \         }[a:cmd]
+
+    call s:conceal(pat)
+    if a:cmd ==# 'ls'
+        call s:color_as_filename('\[No Name\]$')
+    elseif a:cmd ==# 'registers'
+        call s:color_as_filename('\v^\s*\|\s*\|\s*\zs\S+')
+    endif
 endfu
