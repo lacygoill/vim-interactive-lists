@@ -145,7 +145,9 @@ fu! interactive_lists#main(cmd, bang) abort "{{{1
         endif
 
         call setloclist(0, list)
-        call setloclist(0, [], 'a', { 'title': ':'.a:cmd.(a:bang ? '!' : '') })
+        call setloclist(0, [], 'a', { 'title': a:cmd ==# 'marks'
+        \                                      ?   ':Marks' .(a:bang ? '!' : '')
+        \                                      :   ':'.a:cmd.(a:bang ? '!' : '')})
 
         lopen
         let pat = {
