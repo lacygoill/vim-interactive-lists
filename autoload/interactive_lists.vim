@@ -88,13 +88,25 @@ fu! s:convert(output, cmd, bang) abort "{{{1
         let Local_mark  = { item -> extend(item, { 'filename': expand('%:p'),
                                                  \ 'text': item.mark_name.'    '.item.text }) }
 
-        call map(a:output, printf(
-        \                          '%s ? %s : %s',
-        \                          'filereadable(expand(v:val.filename))',
-        \                          'Global_mark(v:val)',
-        \                          a:bang ? 'Local_mark(v:val)' : '{}'
-        \                        )
-        \       )
+        " :Marks  → global marks only
+        " :Marks! → local marks only
+        if a:bang
+            call map(a:output, printf(
+            \                          '%s ? %s : %s',
+            \                          '!filereadable(expand(v:val.filename)) || v:val.mark_name =~# "^\\d$"',
+            \                          'Local_mark(v:val)',
+            \                          '{}',
+            \                        )
+            \       )
+        else
+            call map(a:output, printf(
+            \                          '%s ? %s : %s',
+            \                          'filereadable(expand(v:val.filename))',
+            \                          'Global_mark(v:val)',
+            \                           '{}'
+            \                        )
+            \       )
+        endif
 
         " remove possible empty dictionaries  which may have appeared after previous
         " `map()` invocation
@@ -103,7 +115,7 @@ fu! s:convert(output, cmd, bang) abort "{{{1
         " if no bang was given, we're only interested in global marks, so remove
         " '0, …, '9 marks
         if !a:bang
-            call filter(a:output, 'v:val.text !~# "\\d"')
+            call filter(a:output, 'v:val.mark_name !~# "^\\d$"')
         endif
 
         for mark in a:output
