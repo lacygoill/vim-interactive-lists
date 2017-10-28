@@ -93,7 +93,7 @@ fu! s:convert(output, cmd, bang) abort "{{{1
         if a:bang
             call map(a:output, printf(
             \                          '%s ? %s : %s',
-            \                          '!filereadable(expand(v:val.filename)) || v:val.mark_name =~# "^\\d$"',
+            \                          'v:val.mark_name !~# "^\\u$"',
             \                          'Local_mark(v:val)',
             \                          '{}',
             \                        )
@@ -101,7 +101,7 @@ fu! s:convert(output, cmd, bang) abort "{{{1
         else
             call map(a:output, printf(
             \                          '%s ? %s : %s',
-            \                          'filereadable(expand(v:val.filename))',
+            \                          'v:val.mark_name =~# "^\\u$"',
             \                          'Global_mark(v:val)',
             \                           '{}'
             \                        )
