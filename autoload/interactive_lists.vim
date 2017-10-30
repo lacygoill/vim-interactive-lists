@@ -118,6 +118,11 @@ fu! s:convert(output, cmd, bang) abort "{{{1
             call filter(a:output, 'v:val.mark_name !~# "^\\d$"')
         endif
 
+        " Interesting:
+        " When we iterate  over the dictionaries (`mark`)  stored in `a:output`,
+        " it seems we have access to the original dictionaries, not copies.
+        " Otherwise, removing a key from them would have no effect on `a:output`.
+        " But it does.
         for mark in a:output
             " remove the `mark_name` key, it's not needed anymore
             call remove(mark, 'mark_name')
