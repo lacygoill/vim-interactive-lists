@@ -73,20 +73,20 @@ fu! s:convert(output, cmd, bang) abort "{{{1
         \                     "filename":   matchstr(v:val, ''\v^\s*\S+%(\s+\d+){2}\s+\zs.*''),
         \                   }')
 
-        "                                                      ┌─ it's important to expand the filename
-        "                                                      │  otherwise, if there's a tilde (for $HOME),
-        "                                                      │  clicking on the entry will load an empty
-        "                                                      │  buffer (with the right filepath; weird …)
-        "                                                      │
-        let Global_mark = { item -> extend(item, { 'filename': expand(item.filename),
-                                                 \ 'text': item.mark_name }) }
+        "                                                        ┌─ it's important to expand the filename
+        "                                                        │  otherwise, if there's a tilde (for $HOME),
+        "                                                        │  clicking on the entry will load an empty
+        "                                                        │  buffer (with the right filepath; weird …)
+        "                                                        │
+        let l:Global_mark = { item -> extend(item, { 'filename': expand(item.filename),
+                                                   \ 'text': item.mark_name }) }
 
-        "                           ┌─ `remove()` returns the removed item,
-        "                           │  but `extend()` does NOT return the added item;
-        "                           │  instead returns the new extended dictionary
-        "                           │
-        let Local_mark  = { item -> extend(item, { 'filename': expand('%:p'),
-                                                 \ 'text': item.mark_name.'    '.item.text }) }
+        "                             ┌─ `remove()` returns the removed item,
+        "                             │  but `extend()` does NOT return the added item;
+        "                             │  instead returns the new extended dictionary
+        "                             │
+        let l:Local_mark  = { item -> extend(item, { 'filename': expand('%:p'),
+                                                   \ 'text': item.mark_name.'    '.item.text }) }
 
         " :Marks  → global marks only
         " :Marks! → local marks only
@@ -94,7 +94,7 @@ fu! s:convert(output, cmd, bang) abort "{{{1
             call map(a:output, printf(
             \                          '%s ? %s : %s',
             \                          'v:val.mark_name !~# "^\\u$"',
-            \                          'Local_mark(v:val)',
+            \                          'l:Local_mark(v:val)',
             \                          '{}',
             \                        )
             \       )
@@ -102,7 +102,7 @@ fu! s:convert(output, cmd, bang) abort "{{{1
             call map(a:output, printf(
             \                          '%s ? %s : %s',
             \                          'v:val.mark_name =~# "^\\u$"',
-            \                          'Global_mark(v:val)',
+            \                          'l:Global_mark(v:val)',
             \                           '{}'
             \                        )
             \       )
