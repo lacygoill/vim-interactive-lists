@@ -198,7 +198,7 @@ fu! interactive_lists#main(cmd, bang) abort "{{{1
     return ''
 endfu
 
-fu! s:open_qf(cmd) abort
+fu! s:open_qf(cmd) abort "{{{1
     lopen
     let pat = {
     \           'args'      : '|\s*|\s*$',
