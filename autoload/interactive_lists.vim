@@ -210,6 +210,14 @@ fu! s:open_qf(cmd) abort "{{{1
     \           'registers' : '\v^\s*\|\s*\|\s*',
     \         }[a:cmd]
 
+    if executable('column') && executable('sed')
+        setl modifiable
+        sil! exe "%!sed 's/|/\<c-a>|/1'"
+        sil! exe "%!sed 's/|/\<c-a>|/2'"
+        sil! exe "%!column -s '\<c-a>' -t"
+        setl nomodifiable nomodified
+    endif
+
     call s:conceal(pat)
     if a:cmd ==# 'ls'
         call s:color_as_filename('\[No Name\]$')
