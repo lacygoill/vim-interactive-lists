@@ -35,7 +35,9 @@ fu! s:capture(cmd) abort "{{{1
 endfu
 
 fu! s:color_as_filename(pat) abort "{{{1
-    call  matchadd('qfFileName', a:pat, 0, -1)
+    if hlexists('qfFileName')
+        call matchadd('qfFileName', a:pat, 0, -1)
+    endif
 endfu
 
 fu! s:conceal(pat) abort "{{{1
