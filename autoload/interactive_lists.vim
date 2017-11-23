@@ -29,7 +29,7 @@ fu! s:capture(cmd) abort "{{{1
 
     elseif a:cmd ==# 'registers'
         let list = [ '"', '+', '-', '*', '/', '=' ]
-        call extend(list, map(range(48,57)+range(97,122), 'nr2char(v:val)'))
+        call extend(list, map(range(48,57)+range(97,122), 'nr2char(v:val,1)'))
     endif
     return list
 endfu
