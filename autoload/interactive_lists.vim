@@ -95,17 +95,19 @@ fu! s:convert(output, cmd, bang) abort "{{{1
         " :Marks  → global marks only
         " :Marks! → local marks only
         if a:bang
-            call map(a:output, printf('%s ? %s : %s',
-            \                             { k,v -> v.mark_name !~# '^\u$' },
-            \                             { k,v -> l:Local_mark(v) },
-            \                             '{}',
+            call map(a:output, printf(
+            \                          '%s ? %s : %s',
+            \                          'v:val.mark_name !~# "^\\u$"',
+            \                          'l:Local_mark(v:val)',
+            \                          '{}',
             \                        )
             \       )
         else
-            call map(a:output, printf('%s ? %s : %s',
-            \                             { k,v -> v.mark_name =~# '^\u$' },
-            \                             { k,v -> l:Global_mark(v) },
-            \                             '{}'
+            call map(a:output, printf(
+            \                          '%s ? %s : %s',
+            \                          'v:val.mark_name =~# "^\\u$"',
+            \                          'l:Global_mark(v:val)',
+            \                           '{}'
             \                        )
             \       )
         endif
