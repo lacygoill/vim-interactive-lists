@@ -6,18 +6,18 @@ let g:autoloaded_interactive_lists = 1
 fu! s:capture(cmd) abort "{{{1
     if a:cmd ==# 'args'
         let list = argv()
-        call map(list, '{ "filename": v:val }')
+        call map(list, { k,v -> { 'filename': v } })
 
     elseif a:cmd ==# 'changes'
         let list = split(execute('changes'), '\n')
-        call filter(list, 'v:val =~ ''\v^%(\s+\d+){3}''')
+        call filter(list, { k,v -> v =~ '\v^%(\s+\d+){3}' })
 
     elseif a:cmd ==# 'ls'
         let list = range(1, bufnr('$'))
 
     elseif a:cmd ==# 'marks'
         let list = split(execute('marks'), '\n')
-        call filter(list, 'v:val =~ ''\v^\s+\S+%(\s+\d+){2}''')
+        call filter(list, { k,v -> v =~ '\v^\s+\S+%(\s+\d+){2}' })
 
     elseif a:cmd ==# 'number'
         let pos = getpos('.')
@@ -29,7 +29,7 @@ fu! s:capture(cmd) abort "{{{1
 
     elseif a:cmd ==# 'registers'
         let list = [ '"', '+', '-', '*', '/', '=' ]
-        call extend(list, map(range(48,57)+range(97,122), 'nr2char(v:val,1)'))
+        call extend(list, map(range(48,57)+range(97,122), { k,v -> nr2char(v,1) }))
     endif
     return list
 endfu
@@ -47,8 +47,8 @@ endfu
 
 fu! s:convert(output, cmd, bang) abort "{{{1
     if a:cmd ==# 'ls'
-        call filter(a:output, a:bang ? 'bufexists(v:val)' : 'buflisted(v:val)')
-        call map(a:output, '{ "bufnr": v:val }')
+        call filter(a:output, a:bang ? { k,v -> bufexists(v) } : { k,v -> buflisted(v) })
+        call map(a:output, { k,v -> { 'bufnr': v } })
         for item in a:output
             if empty(bufname(item.bufnr))
                 let item.text = '[No Name]'
@@ -56,24 +56,26 @@ fu! s:convert(output, cmd, bang) abort "{{{1
         endfor
 
     elseif a:cmd ==# 'changes'
-        call map(a:output, '{
-        \                     "lnum":  matchstr(v:val, ''\v^%(\s+\d+){1}\s+\zs\d+''),
-        \                     "col":   matchstr(v:val, ''\v^%(\s+\d+){2}\s+\zs\d+''),
-        \                     "text":  matchstr(v:val, ''\v^%(\s+\d+){3}\s+\zs.*''),
-        \                     "bufnr": bufnr(""),
-        \                   }')
+        call map(a:output, { k,v -> {
+        \                             'lnum':  matchstr(v, '\v^%(\s+\d+){1}\s+\zs\d+'),
+        \                             'col':   matchstr(v, '\v^%(\s+\d+){2}\s+\zs\d+'),
+        \                             'text':  matchstr(v, '\v^%(\s+\d+){3}\s+\zs.*'),
+        \                             'bufnr': bufnr(''),
+        \                           }
+        \                  })
         " all entries should show some text, otherwise it's impossible to know
         " what changed, and they're useless
-        call filter(a:output, '!empty(v:val.text)')
+        call filter(a:output, { k,v -> !empty(v.text) })
 
     elseif a:cmd ==# 'marks'
-        call map(a:output, '{
-        \                     "mark_name":  matchstr(v:val, ''\S\+''),
-        \                     "lnum":       matchstr(v:val, ''\v^\s*\S+\s+\zs\d+''),
-        \                     "col":        matchstr(v:val, ''\v^\s*\S+%(\s+\zs\d+){2}''),
-        \                     "text":       matchstr(v:val, ''\v^\s*\S+%(\s+\d+){2}\s+\zs.*''),
-        \                     "filename":   matchstr(v:val, ''\v^\s*\S+%(\s+\d+){2}\s+\zs.*''),
-        \                   }')
+        call map(a:output, { k,v -> {
+        \                             'mark_name':  matchstr(v, '\S\+'),
+        \                             'lnum':       matchstr(v, '\v^\s*\S+\s+\zs\d+'),
+        \                             'col':        matchstr(v, '\v^\s*\S+%(\s+\zs\d+){2}'),
+        \                             'text':       matchstr(v, '\v^\s*\S+%(\s+\d+){2}\s+\zs.*'),
+        \                             'filename':   matchstr(v, '\v^\s*\S+%(\s+\d+){2}\s+\zs.*'),
+        \                           }
+        \                  })
 
         "                                                        ┌─ it's important to expand the filename
         "                                                        │  otherwise, if there's a tilde (for $HOME),
@@ -93,31 +95,29 @@ fu! s:convert(output, cmd, bang) abort "{{{1
         " :Marks  → global marks only
         " :Marks! → local marks only
         if a:bang
-            call map(a:output, printf(
-            \                          '%s ? %s : %s',
-            \                          'v:val.mark_name !~# "^\\u$"',
-            \                          'l:Local_mark(v:val)',
-            \                          '{}',
+            call map(a:output, printf('%s ? %s : %s',
+            \                             { k,v -> v.mark_name !~# '^\u$' },
+            \                             { k,v -> l:Local_mark(v) },
+            \                             '{}',
             \                        )
             \       )
         else
-            call map(a:output, printf(
-            \                          '%s ? %s : %s',
-            \                          'v:val.mark_name =~# "^\\u$"',
-            \                          'l:Global_mark(v:val)',
-            \                           '{}'
+            call map(a:output, printf('%s ? %s : %s',
+            \                             { k,v -> v.mark_name =~# '^\u$' },
+            \                             { k,v -> l:Global_mark(v) },
+            \                             '{}'
             \                        )
             \       )
         endif
 
         " remove possible empty dictionaries  which may have appeared after previous
         " `map()` invocation
-        call filter(a:output, '!empty(v:val)')
+        call filter(a:output, { k,v -> !empty(v) })
 
         " if no bang was given, we're only interested in global marks, so remove
         " '0, …, '9 marks
         if !a:bang
-            call filter(a:output, 'v:val.mark_name !~# "^\\d$"')
+            call filter(a:output, { k,v -> v.mark_name !~# '^\d$' })
         endif
 
         " When we iterate  over the dictionaries (`mark`)  stored in `a:output`,
@@ -132,36 +132,37 @@ fu! s:convert(output, cmd, bang) abort "{{{1
         endfor
 
     elseif a:cmd ==# 'number'
-        call map(a:output, '{
-        \                     "filename" : expand("%:p"),
-        \                     "lnum"     : matchstr(v:val, ''\v^\s*\zs\d+''),
-        \                     "text"     : matchstr(v:val, ''\v^\s*\d+\s\zs.*''),
-        \                   }')
+        call map(a:output, { k,v -> {
+        \                             'filename' : expand('%:p'),
+        \                             'lnum'     : matchstr(v, '\v^\s*\zs\d+'),
+        \                             'text'     : matchstr(v, '\v^\s*\d+\s\zs.*'),
+        \                           }
+        \                  })
 
     elseif a:cmd ==# 'oldfiles'
-        call map(a:output, '{
-        \                     "text"     : matchstr(v:val, ''\v^\d+\ze:\s.*''),
-        \                     "filename" : expand(matchstr(v:val, ''\v^\d+:\s\zs.*'')),
-        \                   }')
+        call map(a:output, { k,v -> {
+        \                             'text'     : matchstr(v, '\v^\d+\ze:\s.*'),
+        \                             'filename' : expand(matchstr(v, '\v^\d+:\s\zs.*')),
+        \                           }
+        \                  })
 
     elseif a:cmd ==# 'registers'
         " Do NOT use the `filename` key to store the name of the registers.
         " Why?
         " After executing `:LReg`, Vim would load buffers "a", "b", …
         " They would pollute the buffer list (`:ls!`).
-        call map(a:output, '{ "text": v:val }')
+        call map(a:output, { k,v -> { 'text': v } })
 
         " We pass `1` as a 2nd argument to `getreg()`.
         " It's ignored  for most registers,  but useful for the  expression register.
         " It allows to get the expression  itself, not its current value which could
         " not exist anymore (ex: a:arg)
-        call map(a:output, '
-        \                    extend(v:val, {
-        \                                    "text":  v:val.text
-        \                                            ."    "
-        \                                            .substitute(getreg(v:val.text, 1), "\n", "^J", "g")
-        \                                  })
-        \                  ')
+        call map(a:output, { k,v -> extend(v, {
+        \                                       'text':  v.text
+        \                                               .'    '
+        \                                               .substitute(getreg(v.text, 1), '\n', '^J', 'g')
+        \                                     })
+        \                  })
 
     endif
     return a:output
