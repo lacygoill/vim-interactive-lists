@@ -190,14 +190,22 @@ endfu
 
 fu! interactive_lists#main(cmd, bang) abort "{{{1
     try
+        let cmdline = getcmdline()
+        if a:cmd ==# 'number' && cmdline[-1:-1] !=# '#'
+            return cmdline
+        endif
         let output = s:capture(a:cmd)
-        let list   = s:convert(output, a:cmd, a:bang ? 1 : 0)
+        if a:cmd ==# 'number' && get(output, 0, '') =~# '^Pattern not found:'
+            call timer_start(0, {-> feedkeys("\<cr>", 'in') })
+            return 'echoerr "Pattern not found"'
+        endif
+        let list = s:convert(output, a:cmd, a:bang ? 1 : 0)
 
         if empty(list)
             return a:cmd ==# 'args'
             \?         'echoerr "No arguments"'
             \:     a:cmd ==# 'number'
-            \?         getcmdline()
+            \?         cmdline
             \:         'echoerr "No output"'
         endif
 
@@ -205,7 +213,7 @@ fu! interactive_lists#main(cmd, bang) abort "{{{1
         call setloclist(0, [], 'a', { 'title': a:cmd ==# 'marks'
         \                                    ?     ':Marks' .(a:bang ? '!' : '')
         \                                    : a:cmd ==# 'number'
-        \                                    ?     ':'.getcmdline()
+        \                                    ?     ':'.cmdline
         \                                    :     ':'.a:cmd.(a:bang ? '!' : '')})
 
         if a:cmd ==# 'number'
@@ -215,7 +223,7 @@ fu! interactive_lists#main(cmd, bang) abort "{{{1
         endif
     catch
         return a:cmd ==# 'number'
-        \?         getcmdline()
+        \?         cmdline
         \:         'echoerr '.string(v:exception)
     endtry
     return ''
