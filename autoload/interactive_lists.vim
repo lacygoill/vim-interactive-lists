@@ -141,7 +141,7 @@ fu! s:convert(output, cmd, bang) abort "{{{1
 
     elseif a:cmd ==# 'oldfiles'
         call map(a:output, { k,v -> {
-        \                             'text'     : matchstr(v, '\v^\d+\ze:\s.*'),
+        \                             'text'     : fnamemodify(matchstr(v, '\v^\d+:\s\zs.*'), ':t'),
         \                             'filename' : expand(matchstr(v, '\v^\d+:\s\zs.*')),
         \                           }
         \                  })
@@ -209,7 +209,7 @@ fu! s:open_qf(cmd) abort "{{{1
     \           'ls'        : '\v\|\s*\|\s*%(\ze\[No Name\]\s*)?$',
     \           'marks'     : '\v^.{-}\zs\|.{-}\|\s*',
     \           'number'    : '.*|\s*\d\+\s*|\s\?',
-    \           'oldfiles'  : '|\s*|\s*',
+    \           'oldfiles'  : '.\{-}|\s*|\s*',
     \           'registers' : '\v^\s*\|\s*\|\s*',
     \         }[a:cmd]
 
