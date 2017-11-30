@@ -9,14 +9,22 @@ fu! s:capture(cmd) abort "{{{1
         call map(list, { k,v -> { 'filename': v } })
 
     elseif a:cmd ==# 'changes'
+        " The changelist  is local  to a  window.
+        " If we are in a location window,  `g:c` will show us the changes in the
+        " latter.  But, we  are NOT interested in them. We want  the ones in the
+        " associated window.
+        if &buftype ==# 'quickfix' | wincmd p | endif
         let list = split(execute('changes'), '\n')
+        if &buftype ==# 'quickfix' | wincmd p | endif
         call filter(list, { k,v -> v =~ '\v^%(\s+\d+){3}' })
 
     elseif a:cmd ==# 'ls'
         let list = range(1, bufnr('$'))
 
     elseif a:cmd ==# 'marks'
+        if &buftype ==# 'quickfix' | wincmd p | endif
         let list = split(execute('marks'), '\n')
+        if &buftype ==# 'quickfix' | wincmd p | endif
         call filter(list, { k,v -> v =~ '\v^\s+\S+%(\s+\d+){2}' })
 
     elseif a:cmd ==# 'number'
@@ -36,13 +44,23 @@ endfu
 
 fu! s:color_as_filename(pat) abort "{{{1
     if hlexists('qfFileName')
-        call matchadd('qfFileName', a:pat, 0, -1)
+        if exists('w:il_caf_id')
+            call matchdelete(w:il_caf_id)
+        endif
+        let w:il_caf_id = matchadd('qfFileName', a:pat, 0, -1)
+        "        │
+        "        └ Color As Filename
     endif
 endfu
 
 fu! s:conceal(pat) abort "{{{1
     setl cocu=nc cole=3
-    call matchadd('Conceal', a:pat, 0, -1, { 'conceal': 'x' })
+    if exists('w:il_conceal_id')
+        call matchdelete(w:il_conceal_id)
+    endif
+    "     ┌ Interactive Lists
+    "     │
+    let w:il_conceal_id = matchadd('Conceal', a:pat, 0, -1, { 'conceal': 'x' })
 endfu
 
 fu! s:convert(output, cmd, bang) abort "{{{1
@@ -143,8 +161,8 @@ fu! s:convert(output, cmd, bang) abort "{{{1
 
     elseif a:cmd ==# 'oldfiles'
         call map(a:output, { k,v -> {
-        \                             'text'     : fnamemodify(matchstr(v, '\v^\d+:\s\zs.*'), ':t'),
         \                             'filename' : expand(matchstr(v, '\v^\d+:\s\zs.*')),
+        \                             'text'     : fnamemodify(matchstr(v, '\v^\d+:\s\zs.*'), ':t'),
         \                           }
         \                  })
 
