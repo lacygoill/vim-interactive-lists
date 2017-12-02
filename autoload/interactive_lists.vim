@@ -12,23 +12,13 @@ fu! s:capture(cmd) abort "{{{1
         \                       } })
 
     elseif a:cmd ==# 'changes'
-        " The changelist  is local  to a  window.
-        " If we are in a location window,  `g:c` will show us the changes in the
-        " latter.  But, we  are NOT interested in them. We want  the ones in the
-        " associated window.
-        if &buftype ==# 'quickfix' | wincmd p | endif
-        let list = split(execute('changes'), '\n')
-        if &buftype ==# 'quickfix' | wincmd p | endif
-        call filter(list, { k,v -> v =~ '\v^%(\s+\d+){3}' })
+        let list = s:capture_cmd_local_to_window('changes', '\v^%(\s+\d+){3}')
 
     elseif a:cmd ==# 'ls'
         let list = range(1, bufnr('$'))
 
     elseif a:cmd ==# 'marks'
-        if &buftype ==# 'quickfix' | wincmd p | endif
-        let list = split(execute('marks'), '\n')
-        if &buftype ==# 'quickfix' | wincmd p | endif
-        call filter(list, { k,v -> v =~ '\v^\s+\S+%(\s+\d+){2}' })
+        let list = s:capture_cmd_local_to_window('marks', '\v^\s+\S+%(\s+\d+){2}')
 
     elseif a:cmd ==# 'number'
         let pos = getpos('.')
@@ -43,6 +33,18 @@ fu! s:capture(cmd) abort "{{{1
         call extend(list, map(range(48,57)+range(97,122), { k,v -> nr2char(v,1) }))
     endif
     return list
+endfu
+
+fu! s:capture_cmd_local_to_window(cmd, pat) abort "{{{1
+    " The changelist  is local  to a  window.
+    " If we  are in a  location window,  `g:c` will show  us the changes  in the
+    " latter.   But, we  are NOT  interested in  them. We want  the ones  in the
+    " associated window. Same thing for the local marks.
+    let is_quickfix = 0
+    if &buftype ==# 'quickfix' | let is_quickfix = 1 | wincmd p | endif
+    let list = split(execute(a:cmd), '\n')
+    if is_quickfix | wincmd p | endif
+    return filter(list, { k,v -> v =~ a:pat })
 endfu
 
 fu! s:color_as_filename(pat) abort "{{{1
@@ -212,7 +214,7 @@ fu! interactive_lists#main(cmd, bang) abort "{{{1
             \?         'echoerr "No arguments"'
             \:     a:cmd ==# 'number'
             \?         cmdline
-            \:         'echoerr "No match"'
+            \:         'echoerr "No output"'
         endif
 
         call setloclist(0, list)
