@@ -6,7 +6,10 @@ let g:autoloaded_interactive_lists = 1
 fu! s:capture(cmd) abort "{{{1
     if a:cmd ==# 'args'
         let list = argv()
-        call map(list, { k,v -> { 'filename': v } })
+        call map(list, { k,v -> {
+        \                         'filename': v,
+        \                         'text': fnamemodify(v, ':t'),
+        \                       } })
 
     elseif a:cmd ==# 'changes'
         " The changelist  is local  to a  window.
@@ -66,12 +69,12 @@ endfu
 fu! s:convert(output, cmd, bang) abort "{{{1
     if a:cmd ==# 'ls'
         call filter(a:output, a:bang ? { k,v -> bufexists(v) } : { k,v -> buflisted(v) })
-        call map(a:output, { k,v -> { 'bufnr': v } })
-        for item in a:output
-            if empty(bufname(item.bufnr))
-                let item.text = '[No Name]'
-            endif
-        endfor
+        call map(a:output, { k,v -> {
+        \                             'bufnr': v,
+        \                             'text': empty(bufname(v))
+        \                                     ?    '[No Name]'
+        \                                     :     fnamemodify(bufname(v), ':t'),
+        \                           } })
 
     elseif a:cmd ==# 'changes'
         call map(a:output, { k,v -> {
@@ -94,6 +97,7 @@ fu! s:convert(output, cmd, bang) abort "{{{1
         \                             'filename':   matchstr(v, '\v^\s*\S+%(\s+\d+){2}\s+\zs.*'),
         \                           }
         \                  })
+        " \                                      .' '.matchstr(v, '\v^\s*\S+%(\s+\d+){2}\s+\zs.*'),
 
         "                                                        ┌─ it's important to expand the filename
         "                                                        │  otherwise, if there's a tilde (for $HOME),
@@ -101,14 +105,17 @@ fu! s:convert(output, cmd, bang) abort "{{{1
         "                                                        │  buffer (with the right filepath; weird …)
         "                                                        │
         let l:Global_mark = { item -> extend(item, { 'filename': expand(item.filename),
-                                                   \ 'text': item.mark_name }) }
+        \                                            'text': item.mark_name.'    '
+        \                                                   .fnamemodify(expand(item.filename), ':t') }
+        \                                   )
+        \                   }
 
         "                             ┌─ `remove()` returns the removed item,
         "                             │  but `extend()` does NOT return the added item;
         "                             │  instead returns the new extended dictionary
         "                             │
         let l:Local_mark  = { item -> extend(item, { 'filename': expand('%:p'),
-                                                   \ 'text': item.mark_name.'    '.item.text }) }
+        \                                            'text': item.mark_name.'    '.item.text }) }
 
         " :Marks  → global marks only
         " :Marks! → local marks only
@@ -206,7 +213,7 @@ fu! interactive_lists#main(cmd, bang) abort "{{{1
             \?         'echoerr "No arguments"'
             \:     a:cmd ==# 'number'
             \?         cmdline
-            \:         'echoerr "No output"'
+            \:         'echoerr "No match"'
         endif
 
         call setloclist(0, list)
@@ -232,10 +239,10 @@ endfu
 fu! s:open_qf(cmd) abort "{{{1
     lopen
     let pat = {
-    \           'args'      : '|\s*|\s*$',
+    \           'args'      : '.*|\s*|\s*',
     \           'changes'   : '^\v.{-}\|\s*\d+%(\s+col\s+\d+\s*)?\s*\|\s?',
-    \           'ls'        : '\v\|\s*\|\s*%(\ze\[No Name\]\s*)?$',
-    \           'marks'     : '\v^.{-}\zs\|.{-}\|\s*',
+    \           'ls'        : '\v.*\|\s*\|\s*\ze%(\[No Name\]\s*)?.*$',
+    \           'marks'     : '\v^.{-}\|.{-}\|\s*',
     \           'number'    : '.*|\s*\d\+\s*|\s\?',
     \           'oldfiles'  : '.\{-}|\s*|\s*',
     \           'registers' : '\v^\s*\|\s*\|\s*',
@@ -250,9 +257,7 @@ fu! s:open_qf(cmd) abort "{{{1
     endif
 
     call s:conceal(pat)
-    if a:cmd ==# 'ls'
-        call s:color_as_filename('\[No Name\]$')
-    elseif a:cmd ==# 'registers'
-        call s:color_as_filename('\v^\s*\|\s*\|\s*\zs\S+')
+    if a:cmd ==# 'registers'
+        call s:color_as_filename('\v^\s*\|\s*\|\s:\zs\S+')
     endif
 endfu
