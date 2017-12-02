@@ -97,7 +97,6 @@ fu! s:convert(output, cmd, bang) abort "{{{1
         \                             'filename':   matchstr(v, '\v^\s*\S+%(\s+\d+){2}\s+\zs.*'),
         \                           }
         \                  })
-        " \                                      .' '.matchstr(v, '\v^\s*\S+%(\s+\d+){2}\s+\zs.*'),
 
         "                                                        ┌─ it's important to expand the filename
         "                                                        │  otherwise, if there's a tilde (for $HOME),
