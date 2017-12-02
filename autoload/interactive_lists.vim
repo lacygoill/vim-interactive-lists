@@ -249,6 +249,6 @@ fu! s:open_qf(cmd) abort "{{{1
 
     call s:conceal(pat)
     if a:cmd ==# 'registers'
-        call s:color_as_filename('\v^\s*\|\s*\|\s:\zs\S+')
+        call s:color_as_filename('\v^\s*\|\s*\|\s\zs\S+')
     endif
 endfu
