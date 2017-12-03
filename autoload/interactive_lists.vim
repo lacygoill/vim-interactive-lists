@@ -230,8 +230,8 @@ fu! interactive_lists#main(cmd, bang) abort "{{{1
             \:         'echoerr "No output"'
         endif
 
-        call setqflist(list)
-        call setqflist([], 'a', { 'title': a:cmd ==# 'marks'
+        call setloclist(0, list)
+        call setloclist(0, [], 'a', { 'title': a:cmd ==# 'marks'
         \                                    ?     ':Marks' .(a:bang ? '!' : '')
         \                                    : a:cmd ==# 'number'
         \                                    ?     ':'.cmdline
@@ -259,7 +259,7 @@ fu! s:open_qf(cmd) abort "{{{1
     "
     " So,  we just  emit the  event `QuickFixCmdPost`.  `vim-qf` has  an autocmd
     " listening to it.
-    doautocmd QuickFixCmdPost grep
+    doautocmd QuickFixCmdPost lgrep
     let pat = {
     \           'args'      : '.*|\s*|\s*',
     \           'changes'   : '^\v.{-}\|\s*\d+%(\s+col\s+\d+\s*)?\s*\|\s?',
