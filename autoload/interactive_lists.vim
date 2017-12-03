@@ -260,6 +260,9 @@ fu! s:open_qf(cmd) abort "{{{1
     " So,  we just  emit the  event `QuickFixCmdPost`.  `vim-qf` has  an autocmd
     " listening to it.
     doautocmd QuickFixCmdPost lgrep
+    if &l:buftype !=# 'quickfix'
+        return
+    endif
     let pat = {
     \           'args'      : '.*|\s*|\s*',
     \           'changes'   : '^\v.{-}\|\s*\d+%(\s+col\s+\d+\s*)?\s*\|\s?',
