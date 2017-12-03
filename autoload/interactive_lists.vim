@@ -238,7 +238,22 @@ fu! interactive_lists#main(cmd, bang) abort "{{{1
 endfu
 
 fu! s:open_qf(cmd) abort "{{{1
-    lopen
+    " Why `:noautocmd`?{{{
+    "
+    " :lopen will fire a lot of events.
+    " Some of them may alter the way our windows are supposed to be laid out.
+    "
+    " This can be  seen, when we have  3 horizontal viewports, and  we're in the
+    " middle one.  If we  press one of the mapping of  this plugin, the original
+    " window is, wrongly, minimized. We don't want that.
+    "}}}
+    " Why `doautocmd FileType qf`?{{{
+    "
+    " Because of `:noautocmd`, `FileType qf` won't  be fired. We want it so that
+    " our filetype plugin is sourced.
+    "}}}
+    noautocmd lopen
+    doautocmd FileType qf
     let pat = {
     \           'args'      : '.*|\s*|\s*',
     \           'changes'   : '^\v.{-}\|\s*\d+%(\s+col\s+\d+\s*)?\s*\|\s?',
