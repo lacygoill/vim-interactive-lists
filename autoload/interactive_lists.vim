@@ -193,7 +193,20 @@ fu! s:convert(output, cmd, bang) abort "{{{1
         \                  })
 
     endif
-    return a:output
+    " Why setting the `valid` key in all entries?{{{
+    "
+    " For some commands,  the list may contain no valid  error. This is the case
+    " for `:oldfiles`,  because it  doesn't give any  position. So Vim  will use
+    " line 0, col 0 for all entries, which is not valid.
+    "
+    " If there's no valid error in  the list, `:lwindow` won't open it. `vim-qf`
+    " uses `:lwindow`. So, we  need to make sure there's at  least 1 valid entry
+    " in the list.
+    "
+    " Alternative:
+    "         let a:output[0].valid = 1
+    "}}}
+    return map(a:output, { i,v -> extend(v, { 'valid': 1 }) })
 endfu
 
 fu! interactive_lists#main(cmd, bang) abort "{{{1
@@ -217,8 +230,8 @@ fu! interactive_lists#main(cmd, bang) abort "{{{1
             \:         'echoerr "No output"'
         endif
 
-        call setloclist(0, list)
-        call setloclist(0, [], 'a', { 'title': a:cmd ==# 'marks'
+        call setqflist(list)
+        call setqflist([], 'a', { 'title': a:cmd ==# 'marks'
         \                                    ?     ':Marks' .(a:bang ? '!' : '')
         \                                    : a:cmd ==# 'number'
         \                                    ?     ':'.cmdline
@@ -238,22 +251,15 @@ fu! interactive_lists#main(cmd, bang) abort "{{{1
 endfu
 
 fu! s:open_qf(cmd) abort "{{{1
-    " Why `:noautocmd`?{{{
+    " We don't want to open the qf  window directly, because it's the job of our
+    " `vim-qf` plugin. The latter uses some logic to decide the position and the
+    " size of the qf window.
+    " `:lopen`  or  `:lwindow` would  just  open  the  window with  its  default
+    " position/size without any custom logic.
     "
-    " :lopen will fire a lot of events.
-    " Some of them may alter the way our windows are supposed to be laid out.
-    "
-    " This can be  seen, when we have  3 horizontal viewports, and  we're in the
-    " middle one.  If we  press one of the mapping of  this plugin, the original
-    " window is, wrongly, minimized. We don't want that.
-    "}}}
-    " Why `doautocmd FileType qf`?{{{
-    "
-    " Because of `:noautocmd`, `FileType qf` won't  be fired. We want it so that
-    " our filetype plugin is sourced.
-    "}}}
-    noautocmd lopen
-    doautocmd FileType qf
+    " So,  we just  emit the  event `QuickFixCmdPost`.  `vim-qf` has  an autocmd
+    " listening to it.
+    doautocmd QuickFixCmdPost grep
     let pat = {
     \           'args'      : '.*|\s*|\s*',
     \           'changes'   : '^\v.{-}\|\s*\d+%(\s+col\s+\d+\s*)?\s*\|\s?',
