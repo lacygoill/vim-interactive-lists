@@ -47,27 +47,6 @@ fu! s:capture_cmd_local_to_window(cmd, pat) abort "{{{1
     return filter(list, { i,v -> v =~ a:pat })
 endfu
 
-fu! s:color_as_filename(pat) abort "{{{1
-    if hlexists('qfFileName')
-        if exists('w:il_caf_id')
-            call matchdelete(w:il_caf_id)
-        endif
-        let w:il_caf_id = matchadd('qfFileName', a:pat, 0, -1)
-        "        │
-        "        └ Color As Filename
-    endif
-endfu
-
-fu! s:conceal(pat) abort "{{{1
-    setl cocu=nc cole=3
-    if exists('w:il_conceal_id')
-        call matchdelete(w:il_conceal_id)
-    endif
-    "     ┌ Interactive Lists
-    "     │
-    let w:il_conceal_id = matchadd('Conceal', a:pat, 0, -1, { 'conceal': 'x' })
-endfu
-
 fu! s:convert(output, cmd, bang) abort "{{{1
     if a:cmd ==# 'ls'
         call filter(a:output, a:bang ? { i,v -> bufexists(v) } : { i,v -> buflisted(v) })
@@ -260,9 +239,11 @@ fu! s:open_qf(cmd) abort "{{{1
     " So,  we just  emit the  event `QuickFixCmdPost`.  `vim-qf` has  an autocmd
     " listening to it.
     doautocmd QuickFixCmdPost lgrep
+
     if &l:buftype !=# 'quickfix'
         return
     endif
+
     let pat = {
     \           'args'      : '.*|\s*|\s*',
     \           'changes'   : '^\v.{-}\|\s*\d+%(\s+col\s+\d+\s*)?\s*\|\s?',
@@ -273,8 +254,10 @@ fu! s:open_qf(cmd) abort "{{{1
     \           'registers' : '\v^\s*\|\s*\|\s*',
     \         }[a:cmd]
 
-    call s:conceal(pat)
+    call qf#set_matches('interactive_lists:open_qf', 'Conceal', pat)
+
     if a:cmd ==# 'registers'
-        call s:color_as_filename('\v^\s*\|\s*\|\s\zs\S+')
+        call qf#set_matches('interactive_lists:open_qf', 'qfFileName',  'location')
     endif
+    call qf#create_matches()
 endfu
