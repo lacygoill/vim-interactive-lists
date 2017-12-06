@@ -40,10 +40,13 @@ fu! s:capture_cmd_local_to_window(cmd, pat) abort "{{{1
     " If we  are in a  location window,  `g:c` will show  us the changes  in the
     " latter.   But, we  are NOT  interested in  them. We want  the ones  in the
     " associated window. Same thing for the local marks.
-    let is_quickfix = 0
-    if &buftype ==# 'quickfix' | let is_quickfix = 1 | noautocmd wincmd p | endif
-    let list = split(execute(a:cmd), '\n')
-    if is_quickfix | noautocmd wincmd p | endif
+    if &buftype ==# 'quickfix'
+        call qf#focus_window('loc', 0)
+        let list = split(execute(a:cmd), '\n')
+        noautocmd wincmd p
+    else
+        let list = split(execute(a:cmd), '\n')
+    endif
     return filter(list, { i,v -> v =~ a:pat })
 endfu
 
