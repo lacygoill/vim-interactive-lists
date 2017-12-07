@@ -20,14 +20,14 @@ let g:loaded_interactive_lists = 1
 
 " Mappings {{{1
 
-nno <silent><unique>    g:a    :<c-u>exe interactive_lists#main('args', 0)<cr>
-nno <silent><unique>    g:c    :<c-u>exe interactive_lists#main('changes', 0)<cr>
-nno <silent><unique>    g:l    :<c-u>exe interactive_lists#main('ls', 0)<cr>
-nno <silent><unique>    g:L    :<c-u>exe interactive_lists#main('ls', 1)<cr>
-nno <silent><unique>    g:m    :<c-u>exe interactive_lists#main('marks', 0)<cr>
-nno <silent><unique>    g:M    :<c-u>exe interactive_lists#main('marks', 1)<cr>
-nno <silent><unique>    g:o    :<c-u>exe interactive_lists#main('oldfiles', 0)<cr>
-nno <silent><unique>    g:r    :<c-u>exe interactive_lists#main('registers', 0)<cr>
+nno  <silent><unique>  g:a  :<c-u>exe interactive_lists#main('args', 0)<cr>
+nno  <silent><unique>  g:c  :<c-u>exe interactive_lists#main('changes', 0)<cr>
+nno  <silent><unique>  g:l  :<c-u>exe interactive_lists#main('ls', 0)<cr>
+nno  <silent><unique>  g:L  :<c-u>exe interactive_lists#main('ls', 1)<cr>
+nno  <silent><unique>  g:m  :<c-u>exe interactive_lists#main('marks', 0)<cr>
+nno  <silent><unique>  g:M  :<c-u>exe interactive_lists#main('marks', 1)<cr>
+nno  <silent><unique>  g:o  :<c-u>exe interactive_lists#main('oldfiles', 0)<cr>
+nno  <silent><unique>  g:r  :<c-u>exe interactive_lists#main('registers', 0)<cr>
 
 " Why don't we use <expr>?{{{
 "
@@ -43,4 +43,4 @@ nno <silent><unique>    g:r    :<c-u>exe interactive_lists#main('registers', 0)<
 "             return ''
 "         endfu
 "}}}
-cno <unique>  <c-\>n  <c-\>einteractive_lists#main('number', 0)<cr>
+cno  <unique>  <c-\>n  <c-\>einteractive_lists#main('number', 0)<cr>
