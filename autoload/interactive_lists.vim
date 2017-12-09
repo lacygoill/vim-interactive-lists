@@ -225,11 +225,9 @@ fu! interactive_lists#main(cmd, bang) abort "{{{1
             call s:open_qf(a:cmd)
         endif
     catch
-        if a:cmd ==# 'number'
-            return cmdline
-        else
-            call my_lib#catch_error()
-        endif
+        return a:cmd ==# 'number'
+        \?         cmdline
+        \:         my_lib#catch_error()
     endtry
     return ''
 endfu
