@@ -241,7 +241,7 @@ fu! s:open_qf(cmd) abort "{{{1
     "
     " So,  we just  emit the  event `QuickFixCmdPost`.  `vim-qf` has  an autocmd
     " listening to it.
-    doautocmd QuickFixCmdPost lgrep
+    doautocmd <nomodeline> QuickFixCmdPost lgrep
 
     if &l:buftype !=# 'quickfix'
         return
