@@ -260,7 +260,7 @@ fu! s:open_qf(cmd) abort "{{{1
     call qf#set_matches('interactive_lists:open_qf', 'Conceal', pat)
 
     if a:cmd ==# 'registers'
-        call qf#set_matches('interactive_lists:open_qf', 'qfFileName',  'location')
+        call qf#set_matches('interactive_lists:open_qf', 'qfFileName',  '\v^\s*\|\s*\|\s\zs\S+')
     endif
     call qf#create_matches()
 endfu
