@@ -170,20 +170,7 @@ fu! s:convert(output, cmd, bang) abort "{{{1
         \                  })
 
     endif
-    " Why setting the `valid` key in all entries?{{{
-    "
-    " For some commands,  the list may contain no valid  error. This is the case
-    " for `:oldfiles`,  because it  doesn't give any  position. So Vim  will use
-    " line 0, col 0 for all entries, which is not valid.
-    "
-    " If there's no valid error in  the list, `:lwindow` won't open it. `vim-qf`
-    " uses `:lwindow`. So, we  need to make sure there's at  least 1 valid entry
-    " in the list.
-    "
-    " Alternative:
-    "         let a:output[0].valid = 1
-    "}}}
-    return map(a:output, { i,v -> extend(v, { 'valid': 1 }) })
+    return a:output
 endfu
 
 fu! interactive_lists#main(cmd, bang) abort "{{{1
@@ -236,7 +223,7 @@ fu! s:open_qf(cmd) abort "{{{1
     "
     " So,  we just  emit the  event `QuickFixCmdPost`.  `vim-qf` has  an autocmd
     " listening to it.
-    doautocmd <nomodeline> QuickFixCmdPost lgrep
+    doautocmd <nomodeline> QuickFixCmdPost lopen
 
     if &l:buftype !=# 'quickfix'
         return
