@@ -1,8 +1,3 @@
-if exists('g:autoloaded_interactive_lists')
-    finish
-endif
-let g:autoloaded_interactive_lists = 1
-
 fu! s:capture(cmd) abort "{{{1
     if a:cmd ==# 'args'
         let list = argv()
