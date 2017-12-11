@@ -165,7 +165,7 @@ fu! s:convert(output, cmd, bang) abort "{{{1
         call map(a:output, { i,v -> extend(v, {
         \                                       'text':  v.text
         \                                               .'    '
-        \                                               .substitute(getreg(v.text, 1), '\n', '^J', 'g')
+        \                                               .strtrans(getreg(v.text, 1))
         \                                     })
         \                  })
 
