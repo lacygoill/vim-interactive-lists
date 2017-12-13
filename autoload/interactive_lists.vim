@@ -50,9 +50,10 @@ fu! s:convert(output, cmd, bang) abort "{{{1
         call filter(a:output, a:bang ? { i,v -> bufexists(v) } : { i,v -> buflisted(v) })
         call map(a:output, { i,v -> {
         \                             'bufnr': v,
-        \                             'text': empty(bufname(v))
-        \                                     ?    '[No Name]'
-        \                                     :     fnamemodify(bufname(v), ':t'),
+        \                             'text': v.repeat(' ', 4-strlen(v))
+        \                                      .(empty(bufname(v))
+        \                                        ?    '[No Name]'
+        \                                        :     fnamemodify(bufname(v), ':t'))
         \                           } })
 
     elseif a:cmd ==# 'changes'
