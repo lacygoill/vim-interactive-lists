@@ -226,7 +226,7 @@ fu! s:open_qf(cmd) abort "{{{1
     " listening to it.
     doautocmd <nomodeline> QuickFixCmdPost lopen
 
-    if &l:buftype !=# 'quickfix'
+    if &bt !=# 'quickfix'
         return
     endif
 
