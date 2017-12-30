@@ -48,12 +48,26 @@ endfu
 fu! s:convert(output, cmd, bang) abort "{{{1
     if a:cmd ==# 'ls'
         call filter(a:output, a:bang ? { i,v -> bufexists(v) } : { i,v -> buflisted(v) })
+        " Why is the first character in `printf()` a no-break space?{{{
+        "
+        " Because, by default, Vim reduces all leading spaces in the text to a single space.
+        " We don't want that. We want them to be left as is, so that the buffer numbers are
+        " right aligned in their field. So, we prefix the text with a character which is not
+        " a whitespace, but looks like one.
+        "}}}
         call map(a:output, { i,v -> {
         \                             'bufnr': v,
-        \                             'text': v.repeat(' ', 4-strlen(v))
-        \                                      .(empty(bufname(v))
-        \                                        ?    '[No Name]'
-        \                                        :     fnamemodify(bufname(v), ':t'))
+        \                             'text': printf(' %*d%s%s%s%s%s %s',
+        \                                             len(bufnr('$')), v,
+        \                                            !buflisted(v) ? 'u': ' ',
+        \                                            v ==# bufnr('%') ? '%' : v ==# bufnr('#') ? '#' : ' ',
+        \                                            empty(win_findbuf(v)) ? 'h' : 'a',
+        \                                            getbufvar(v, '&ma', 0) ? ' ' : '-',
+        \                                            getbufvar(v, '&mod', 0) ? '+' : ' ',
+        \                                            (empty(bufname(v))
+        \                                              ?    '[No Name]'
+        \                                              :     fnamemodify(bufname(v), ':t'))
+        \                                           )
         \                           } })
 
     elseif a:cmd ==# 'changes'
