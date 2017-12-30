@@ -64,9 +64,9 @@ fu! s:convert(output, cmd, bang) abort "{{{1
         \                                            empty(win_findbuf(v)) ? 'h' : 'a',
         \                                            getbufvar(v, '&ma', 0) ? ' ' : '-',
         \                                            getbufvar(v, '&mod', 0) ? '+' : ' ',
-        \                                            (empty(bufname(v))
+        \                                            empty(bufname(v))
         \                                              ?    '[No Name]'
-        \                                              :     fnamemodify(bufname(v), ':t'))
+        \                                              :     fnamemodify(bufname(v), ':t')
         \                                           )
         \                           } })
 
