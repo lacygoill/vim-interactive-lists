@@ -224,7 +224,7 @@ fu! interactive_lists#main(cmd, bang) abort "{{{1
     catch
         return a:cmd ==# 'number'
         \?         cmdline
-        \:         my_lib#catch_error()
+        \:         lg#catch_error()
     endtry
     return ''
 endfu
