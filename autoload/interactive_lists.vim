@@ -82,7 +82,8 @@ fu! s:convert(output, cmd, bang) abort "{{{1
         " what changed, and they're useless
         call filter(a:output, { i,v -> !empty(v.text) })
 
-    elseif a:cmd ==# 'marks'
+    " :Marks! → local marks only
+    elseif a:cmd ==# 'marks' && a:bang
         call map(a:output, { i,v -> {
         \                             'mark_name':  matchstr(v, '\S\+'),
         \                             'lnum':       matchstr(v, '\v^\s*\S+\s+\zs\d+'),
@@ -92,17 +93,6 @@ fu! s:convert(output, cmd, bang) abort "{{{1
         \                           }
         \                  })
 
-        "                                                        ┌─ it's important to expand the filename
-        "                                                        │  otherwise, if there's a tilde (for $HOME),
-        "                                                        │  clicking on the entry will load an empty
-        "                                                        │  buffer (with the right filepath; weird …)
-        "                                                        │
-        let l:Global_mark = { item -> extend(item, { 'filename': expand(item.filename),
-        \                                            'text': item.mark_name.'    '
-        \                                                   .fnamemodify(expand(item.filename), ':t') }
-        \                                   )
-        \                   }
-
         "                             ┌─ `remove()` returns the removed item,
         "                             │  but `extend()` does NOT return the added item;
         "                             │  instead returns the new extended dictionary
@@ -110,35 +100,17 @@ fu! s:convert(output, cmd, bang) abort "{{{1
         let l:Local_mark  = { item -> extend(item, { 'filename': expand('%:p'),
         \                                            'text': item.mark_name.'    '.item.text }) }
 
-        " :Marks  → global marks only
-        " :Marks! → local marks only
-        if a:bang
-            call map(a:output, printf(
-            \                          '%s ? %s : %s',
-            \                          'v:val.mark_name !~# "^\\u$"',
-            \                          'l:Local_mark(v:val)',
-            \                          '{}',
-            \                        )
-            \       )
-        else
-            call map(a:output, printf(
-            \                          '%s ? %s : %s',
-            \                          'v:val.mark_name =~# "^\\u$"',
-            \                          'l:Global_mark(v:val)',
-            \                           '{}'
-            \                        )
-            \       )
-        endif
+        call map(a:output, printf(
+        \                          '%s ? %s : %s',
+        \                          'v:val.mark_name !~# "^\\u$"',
+        \                          'l:Local_mark(v:val)',
+        \                          '{}',
+        \                        )
+        \       )
 
         " remove possible empty dictionaries  which may have appeared after previous
         " `map()` invocation
         call filter(a:output, { i,v -> !empty(v) })
-
-        " if no bang was given, we're only interested in global marks, so remove
-        " '0, …, '9 marks
-        if !a:bang
-            call filter(a:output, { i,v -> v.mark_name !~# '^\d$' })
-        endif
 
         " When we iterate  over the dictionaries (`mark`)  stored in `a:output`,
         " we have access to the original dictionaries, not copies.
@@ -150,6 +122,21 @@ fu! s:convert(output, cmd, bang) abort "{{{1
             " remove the `mark_name` key, it's not needed anymore
             call remove(mark, 'mark_name')
         endfor
+
+    " :Marks  → global marks only
+    elseif a:cmd ==# 'marks' && !a:bang
+        if !filereadable($HOME.'/.vim/bookmarks')
+            return []
+        endif
+        let bookmarks = readfile($HOME.'/.vim/bookmarks')
+
+        call map(bookmarks, { i,v -> {
+        \                             'text':       v[0].'  '.fnamemodify(matchstr(v, ':\zs.*'), ':t'),
+        \                             'filename':   expand(matchstr(v, ':\zs.*')),
+        \                           }
+        \                  })
+
+        return bookmarks
 
     elseif a:cmd ==# 'number'
         call map(a:output, { i,v -> {
