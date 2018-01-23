@@ -36,7 +36,7 @@ fu! s:capture_cmd_local_to_window(cmd, pat) abort "{{{1
     " latter.   But, we  are NOT  interested in  them. We want  the ones  in the
     " associated window. Same thing for the local marks.
     if &buftype ==# 'quickfix'
-        noautocmd call window#qf_open('loc')
+        noautocmd call lg#window#qf_open('loc')
         let list = split(execute(a:cmd), '\n')
         noautocmd wincmd p
     else
