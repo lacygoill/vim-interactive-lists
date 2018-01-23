@@ -248,3 +248,56 @@ fu! s:open_qf(cmd) abort "{{{1
     endif
     call qf#create_matches()
 endfu
+
+fu! interactive_lists#set_or_go_to_mark(action) abort "{{{1
+    " ask for a mark
+    let mark = nr2char(getchar(),1)
+    if mark ==# "\e"
+        return
+    endif
+
+    " if it's not a global one, just type the keys as usual
+    "     • mx
+    "     • 'x
+    if mark !=# toupper(mark)
+        return feedkeys((a:action ==# 'set' ? 'm' : "'").mark, 'int')
+    endif
+
+    " now, we process a global mark
+    " first, get the path to the file containing the bookmarks
+    let book_file = $HOME.'/.vim/bookmarks'
+    if !filereadable(book_file)
+        echo book_file.' is not readable'
+        return
+    endif
+
+    " we SET a global mark
+    if a:action ==# 'set'
+        "                   ┌ eliminate old mark if it's present
+        "                   │
+        let new_bookmarks = filter(readfile(book_file), {i,v -> v[0] !=# mark})
+        \ +                 [mark.':'.substitute(expand('%:p'), $HOME, '$HOME', '')]
+        " │
+        " └ and bookmark current file
+        call writefile(sort(new_bookmarks), book_file)
+
+    " we JUMP to a global mark
+    else
+        let path = filter(readfile(book_file), {i,v -> v[0] ==# mark})
+        if empty(path)
+            return
+        endif
+        let path = path[0][2:]
+        exe 'e '.path
+        " '. may not exist
+        try
+            sil! norm! g`.zvzz
+            "  │
+            "  └ E20: mark not set
+        catch
+            return lg#catch_error()
+        endtry
+    endif
+    " re-mark the file, to fix Vim's frequent and unavoidable lost marks
+    call feedkeys('m'.mark, 'int')
+endfu

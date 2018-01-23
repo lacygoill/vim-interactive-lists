@@ -65,3 +65,36 @@ nno  <silent><unique>  g:r  :<c-u>exe interactive_lists#main('registers', 0)<cr>
 
 "}}}
 cno  <unique>  <c-\>n  <c-\>einteractive_lists#main('number', 0)<cr>
+
+" Why?{{{
+"
+" When we load a buffer, we have an autocmd (`:au jump_last_position`) which
+" moves the cursor to the last edit performed in that buffer.
+" Unfortunately, it doesn't work when we load a file with a global mark.
+" Indeed, the global mark contains several info (`:marks`):
+"
+"         • path to file
+"         • line nr
+"         • column nr
+"
+" When we load a file with a global mark, Vim will position the cursor on the
+" line where we saved the mark.
+" But that's not what we want. We want the cursor to be on the last edit.
+" To fix this, we override all the 'A … 'Z commands so that after the loading
+" of a marked file, Vim types g`.
+
+" Also, Vim may erase a global mark  when it has to execute `:bwipe`. It happens
+" when we execute  `:vimgrep` to look for a  pattern in a set of  files, and the
+" latter contains a file with a global mark which doesn't contain the pattern:
+"
+"             https://github.com/vim/vim/issues/2166
+
+" So, all in all, the global marks system is pretty broken.
+
+" We re-implement it completely and save the paths in a bookmark file.
+"
+" Don't rely on  the existing mechanism, it's fucked up  beyond any repair.
+" Don't even rely on `~/.viminfo`. It's another can of worms.
+"}}}
+nno  <silent><unique>  m  :<c-u>call interactive_lists#set_or_go_to_mark('set')<cr>
+nno  <silent><unique>  '  :<c-u>call interactive_lists#set_or_go_to_mark('go')<cr>
