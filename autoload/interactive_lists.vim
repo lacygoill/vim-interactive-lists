@@ -1,3 +1,72 @@
+fu! interactive_lists#all_matches_in_buffer() abort "{{{1
+    " Alternative:
+    "
+    "         keepj g//#
+
+    let view = winsaveview()
+    try
+        " Why `:exe`?{{{
+        "
+        " It removes excessive spaces in the title of the qf window, between the
+        " colon and the rest of the command.
+        "}}}
+        " Why is it necessary?{{{
+        "
+        " Because Vim copies the indentation of the command.
+        "
+        " MWE:
+        "     nno  cd  :lvim /./ % <bar> lopen<cr>
+        "
+        "     cd
+        "     :lopen
+        "         → title = ':lvim /./ %'    ✔
+        "
+        "     nno  cd  :call Func()<cr>
+        "     fu! Func() abort
+        "         lvim /./ %
+        "         lopen
+        "     endfu
+        "
+        "     cd
+        "         → title = ':    lvim /./ %'
+        "                     ^^^^
+        "                      ✘ because `:lvim` is executed from a line
+        "                        with a level of indentation of 4 spaces
+        "
+        "     nno  cd  :call Func()<cr>
+        "     fu! Func() abort
+        "         try
+        "             lvim /./ %
+        "             lopen
+        "         endtry
+        "     endfu
+        "
+        "     cd
+        "         → title = ':        lvim /./ %'
+        "                     ^^^^^^^^
+        "                      ✘ because `:lvim` is executed from a line
+        "                        with a level of indentation of 8 spaces
+        "}}}
+        " Is there an alternative?{{{
+        "
+        " Yes, but it's more complicated:
+        "
+        "     if &bt ==# 'quickfix'
+        "         let w:quickfix_title = ':'.matchstr(w:quickfix_title, ':\s*\zs\S.*')
+        "     endif
+        "}}}
+        exe 'lvim //g %'
+        call winrestview(view)
+        wincmd p
+        if &l:bt ==# 'quickfix'
+            call qf#set_matches('vimrc:all_matches_in_buffer', 'Conceal', 'location')
+            call qf#create_matches()
+        endif
+    catch
+        return lg#catch_error()
+    endtry
+endfu
+
 fu! s:capture(cmd) abort "{{{1
     if a:cmd ==# 'args'
         let list = argv()

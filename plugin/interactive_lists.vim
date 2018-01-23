@@ -17,7 +17,14 @@ let g:loaded_interactive_lists = 1
 " After capturing output of `:jumps`, how  to distinguish a path to a file, from
 " a text in the current buffer describing a path to a file.
 
-" Mappings {{{1
+" useful to display the subset of lines in the buffer containing the last search pattern
+" equivalent to:
+"                 :Ilist pattern    without slash around pattern
+"                                   because our custom implementation of
+"                                   `:ilist` doesn't add anchors (\<, \>)
+"                                   contrary to the default `:ilist`
+
+nno  <silent><unique>  g::  :<c-u>call interactive_lists#all_matches_in_buffer()<cr>
 
 nno  <silent><unique>  g:a  :<c-u>exe interactive_lists#main('args', 0)<cr>
 nno  <silent><unique>  g:c  :<c-u>exe interactive_lists#main('changes', 0)<cr>
