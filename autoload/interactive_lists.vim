@@ -125,19 +125,19 @@ fu! s:convert(output, cmd, bang) abort "{{{1
         " a whitespace, but looks like one.
         "}}}
         call map(a:output, { i,v -> {
-        \                             'bufnr': v,
-        \                             'text': printf(' %*d%s%s%s%s%s %s',
-        \                                             len(bufnr('$')), v,
-        \                                            !buflisted(v) ? 'u': ' ',
-        \                                            v ==# bufnr('%') ? '%' : v ==# bufnr('#') ? '#' : ' ',
-        \                                            empty(win_findbuf(v)) ? 'h' : 'a',
-        \                                            getbufvar(v, '&ma', 0) ? ' ' : '-',
-        \                                            getbufvar(v, '&mod', 0) ? '+' : ' ',
-        \                                            empty(bufname(v))
-        \                                              ?    '[No Name]'
-        \                                              :     fnamemodify(bufname(v), ':t')
-        \                                           )
-        \                           } })
+        \        'bufnr': v,
+        \        'text': printf(' %*d%s%s%s%s%s %s',
+        \                        len(bufnr('$')), v,
+        \                       !buflisted(v) ? 'u': ' ',
+        \                       v ==# bufnr('%') ? '%' : v ==# bufnr('#') ? '#' : ' ',
+        \                       empty(win_findbuf(v)) ? 'h' : 'a',
+        \                       getbufvar(v, '&ma', 0) ? ' ' : '-',
+        \                       getbufvar(v, '&mod', 0) ? '+' : ' ',
+        \                       empty(bufname(v))
+        \                         ?    '[No Name]'
+        \                         :     fnamemodify(bufname(v), ':t')
+        \                      )
+        \ }})
 
     elseif a:cmd ==# 'changes'
         call map(a:output, { i,v -> {
