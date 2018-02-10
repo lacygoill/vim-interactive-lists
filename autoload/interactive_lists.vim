@@ -78,6 +78,9 @@ fu! s:capture(cmd) abort "{{{1
     elseif a:cmd ==# 'changes'
         let list = s:capture_cmd_local_to_window('changes', '\v^%(\s+\d+){3}')
 
+    elseif a:cmd ==# 'jumps'
+        let list = s:capture_cmd_local_to_window('jumps', '^')
+
     elseif a:cmd ==# 'ls'
         let list = range(1, bufnr('$'))
 
@@ -103,15 +106,31 @@ fu! s:capture_cmd_local_to_window(cmd, pat) abort "{{{1
     " The changelist  is local  to a  window.
     " If we  are in a  location window,  `g:c` will show  us the changes  in the
     " latter.   But, we  are NOT  interested in  them. We want  the ones  in the
-    " associated window. Same thing for the local marks.
-    if &buftype ==# 'quickfix'
-        noautocmd call lg#window#qf_open('loc')
-        let list = split(execute(a:cmd), '\n')
-        noautocmd wincmd p
+    " associated window. Same thing for the jumplist and the local marks.
+    if a:cmd ==# 'jumps'
+        if &buftype ==# 'quickfix'
+            noautocmd call lg#window#qf_open('loc')
+            " FIXME:
+            " Initially (before any `:jumps`, C-o, C-i in the window),
+            " `getjumplist()` returns some locations several times.
+            sil jumps
+            let list = getjumplist()
+            noautocmd wincmd p
+            return list
+        else
+            sil jumps
+            return get(getjumplist(), 0, [])
+        endif
     else
-        let list = split(execute(a:cmd), '\n')
+        if &buftype ==# 'quickfix'
+            noautocmd call lg#window#qf_open('loc')
+            let list = split(execute(a:cmd), '\n')
+            noautocmd wincmd p
+        else
+            let list = split(execute(a:cmd), '\n')
+        endif
+        return filter(list, { i,v -> v =~ a:pat })
     endif
-    return filter(list, { i,v -> v =~ a:pat })
 endfu
 
 fu! s:convert(output, cmd, bang) abort "{{{1
@@ -150,6 +169,16 @@ fu! s:convert(output, cmd, bang) abort "{{{1
         " all entries should show some text, otherwise it's impossible to know
         " what changed, and they're useless
         call filter(a:output, { i,v -> !empty(v.text) })
+
+    elseif a:cmd ==# 'jumps'
+        " FIXME:
+        " Why?
+        " For some reason, `getjumplist()` seems to include in the list an item
+        " matching the location: (buffer, line, col) = (1, 0, 0)
+        " In fact, initially (i.e. before executing a `:jumps` in the window or
+        " pressing C-o, C-i), it includes this item as many times as necessary
+        " to get a list whose size is 100.
+        call filter(a:output, {i,v -> bufexists(v.bufnr)})
 
     " :Marks! → local marks only
     elseif a:cmd ==# 'marks' && a:bang
@@ -225,7 +254,7 @@ fu! s:convert(output, cmd, bang) abort "{{{1
     elseif a:cmd ==# 'registers'
         " Do NOT use the `filename` key to store the name of the registers.
         " Why?
-        " After executing `:LReg`, Vim would load buffers "a", "b", …
+        " After pressing `g:r`, Vim would load buffers "a", "b", …
         " They would pollute the buffer list (`:ls!`).
         call map(a:output, { i,v -> { 'text': v } })
 
@@ -236,7 +265,7 @@ fu! s:convert(output, cmd, bang) abort "{{{1
         call map(a:output, { i,v -> extend(v, {
         \                                       'text':  v.text
         \                                               .'    '
-        \                                               .strtrans(getreg(v.text, 1))
+        \                                               .getreg(v.text, 1)
         \                                     })
         \                  })
 
@@ -303,6 +332,7 @@ fu! s:open_qf(cmd) abort "{{{1
     let pat = {
     \           'args'      : '.*|\s*|\s*',
     \           'changes'   : '^\v.{-}\|\s*\d+%(\s+col\s+\d+\s*)?\s*\|\s?',
+    \           'jumps'     : '',
     \           'ls'        : '\v.*\|\s*\|\s*\ze%(\[No Name\]\s*)?.*$',
     \           'marks'     : '\v^.{-}\|.{-}\|\s*',
     \           'number'    : '.*|\s*\d\+\s*|\s\?',

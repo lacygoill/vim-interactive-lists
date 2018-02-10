@@ -4,30 +4,28 @@ endif
 let g:loaded_interactive_lists = 1
 
 " TODO:
-" :clist :llist (with all possible syntaxes)
-" :dlist :ilist
-" :jumps
-" :tags, :tselect
+" :clist  :llist (with all possible syntaxes)
+" :dlist  :ilist
+" :tags   :tselect
 " :undolist
 
 " TODO:
 " replace ^J with a real linefeed, so that we can copy the register faithfully; possible?
 
-" FIXME:
-" After capturing output of `:jumps`, how  to distinguish a path to a file, from
-" a text in the current buffer describing a path to a file.
-
+" Purpose:{{{
+"
 " useful to display the subset of lines in the buffer containing the last search pattern
 " equivalent to:
 "                 :Ilist pattern    without slash around pattern
 "                                   because our custom implementation of
 "                                   `:ilist` doesn't add anchors (\<, \>)
 "                                   contrary to the default `:ilist`
-
+"}}}
 nno  <silent><unique>  g::  :<c-u>call interactive_lists#all_matches_in_buffer()<cr>
 
 nno  <silent><unique>  g:a  :<c-u>exe interactive_lists#main('args', 0)<cr>
 nno  <silent><unique>  g:c  :<c-u>exe interactive_lists#main('changes', 0)<cr>
+nno  <silent><unique>  g:j  :<c-u>exe interactive_lists#main('jumps', 0)<cr>
 nno  <silent><unique>  g:l  :<c-u>exe interactive_lists#main('ls', 0)<cr>
 nno  <silent><unique>  g:L  :<c-u>exe interactive_lists#main('ls', 1)<cr>
 nno  <silent><unique>  g:m  :<c-u>exe interactive_lists#main('marks', 0)<cr>
