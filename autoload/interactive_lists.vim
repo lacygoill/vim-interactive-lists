@@ -114,12 +114,16 @@ fu! s:capture_cmd_local_to_window(cmd, pat) abort "{{{1
             " Initially (before any `:jumps`, C-o, C-i in the window),
             " `getjumplist()` returns some locations several times.
             sil jumps
-            let list = getjumplist()
+            let jumplist = get(getjumplist(), 0, [])
+            call map(jumplist, {i,v -> extend(v,
+            \        {'text': bufnr('%') ==# v.bufnr ? getline(v.lnum) : bufname(v.bufnr)})})
             noautocmd wincmd p
-            return list
+            return jumplist
         else
             sil jumps
-            return get(getjumplist(), 0, [])
+            let jumplist = get(getjumplist(), 0, [])
+            return map(jumplist, {i,v -> extend(v,
+            \          {'text': bufnr('%') ==# v.bufnr ? getline(v.lnum) : bufname(v.bufnr)})})
         endif
     else
         if &buftype ==# 'quickfix'
@@ -179,8 +183,6 @@ fu! s:convert(output, cmd, bang) abort "{{{1
         " pressing C-o, C-i), it includes this item as many times as necessary
         " to get a list whose size is 100.
         call filter(a:output, {i,v -> bufexists(v.bufnr)})
-        call map(a:output, {i,v -> extend(v,
-        \        {'text': bufnr('%') ==# v.bufnr ? getline(v.lnum) : bufname(v.bufnr)})})
 
     " :Marks! → local marks only
     elseif a:cmd ==# 'marks' && a:bang
