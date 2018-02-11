@@ -179,6 +179,8 @@ fu! s:convert(output, cmd, bang) abort "{{{1
         " pressing C-o, C-i), it includes this item as many times as necessary
         " to get a list whose size is 100.
         call filter(a:output, {i,v -> bufexists(v.bufnr)})
+        call map(a:output, {i,v -> extend(v,
+        \        {'text': bufnr('%') ==# v.bufnr ? getline(v.lnum) : bufname(v.bufnr)})})
 
     " :Marks! → local marks only
     elseif a:cmd ==# 'marks' && a:bang
@@ -332,7 +334,7 @@ fu! s:open_qf(cmd) abort "{{{1
     let pat = {
     \           'args'      : '.*|\s*|\s*',
     \           'changes'   : '^\v.{-}\|\s*\d+%(\s+col\s+\d+\s*)?\s*\|\s?',
-    \           'jumps'     : '',
+    \           'jumps'     : '^.\{-}\ze|',
     \           'ls'        : '\v.*\|\s*\|\s*\ze%(\[No Name\]\s*)?.*$',
     \           'marks'     : '\v^.{-}\|.{-}\|\s*',
     \           'number'    : '.*|\s*\d\+\s*|\s\?',
