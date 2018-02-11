@@ -110,17 +110,12 @@ fu! s:capture_cmd_local_to_window(cmd, pat) abort "{{{1
     if a:cmd ==# 'jumps'
         if &buftype ==# 'quickfix'
             noautocmd call lg#window#qf_open('loc')
-            " FIXME:
-            " Initially (before any `:jumps`, C-o, C-i in the window),
-            " `getjumplist()` returns some locations several times.
-            sil jumps
             let jumplist = get(getjumplist(), 0, [])
             call map(jumplist, {i,v -> extend(v,
             \        {'text': bufnr('%') ==# v.bufnr ? getline(v.lnum) : bufname(v.bufnr)})})
             noautocmd wincmd p
             return jumplist
         else
-            sil jumps
             let jumplist = get(getjumplist(), 0, [])
             return map(jumplist, {i,v -> extend(v,
             \          {'text': bufnr('%') ==# v.bufnr ? getline(v.lnum) : bufname(v.bufnr)})})
@@ -175,13 +170,12 @@ fu! s:convert(output, cmd, bang) abort "{{{1
         call filter(a:output, { i,v -> !empty(v.text) })
 
     elseif a:cmd ==# 'jumps'
-        " FIXME:
         " Why?
         " For some reason, `getjumplist()` seems to include in the list an item
         " matching the location: (buffer, line, col) = (1, 0, 0)
-        " In fact, initially (i.e. before executing a `:jumps` in the window or
-        " pressing C-o, C-i), it includes this item as many times as necessary
-        " to get a list whose size is 100.
+        " The issue may  come from the fact  that when we start Vim,  we have an
+        " unnamed and empty buffer. Then, Vim restores a session automatically.
+        " In the process, this buffer n°1 is probably wiped.
         call filter(a:output, {i,v -> bufexists(v.bufnr)})
 
     " :Marks! → local marks only
