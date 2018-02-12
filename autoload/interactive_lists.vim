@@ -274,7 +274,7 @@ endfu
 fu! interactive_lists#main(cmd, bang) abort "{{{1
     try
         let cmdline = getcmdline()
-        if a:cmd is# 'number' && cmdline[-1:-1] !=# '#'
+        if a:cmd is# 'number' && cmdline[-1:-1] isnot# '#'
             return cmdline
         endif
         let output = s:capture(a:cmd)
@@ -323,7 +323,7 @@ fu! s:open_qf(cmd) abort "{{{1
     " listening to it.
     doautocmd <nomodeline> QuickFixCmdPost lopen
 
-    if &bt !=# 'quickfix'
+    if &bt isnot# 'quickfix'
         return
     endif
 
@@ -372,7 +372,7 @@ fu! interactive_lists#set_or_go_to_mark(action) abort "{{{1
     if a:action is# 'set'
         "                   ┌ eliminate old mark if it's present
         "                   │
-        let new_bookmarks = filter(readfile(book_file), {i,v -> v[0] !=# mark})
+        let new_bookmarks = filter(readfile(book_file), {i,v -> v[0] isnot# mark})
         \ +                 [mark.':'.substitute(expand('%:p'), $HOME, '$HOME', '')]
         " │
         " └ and bookmark current file
