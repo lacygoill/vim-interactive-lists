@@ -120,7 +120,29 @@ fu! s:capture_cmd_local_to_window(cmd, pat) abort "{{{1
             return map(jumplist, {i,v -> extend(v,
             \          {'text': bufnr('%') ==# v.bufnr ? getline(v.lnum) : bufname(v.bufnr)})})
         endif
-    else
+
+    elseif a:cmd is# 'changes'
+        if &bt is# 'quickfix'
+            noautocmd call lg#window#qf_open('loc')
+            let changelist = get(getchangelist(bufnr('%')), 0, [])
+            let bufnr = bufnr('%')
+            for entry in changelist
+                call extend(entry, {'text': getline(entry.lnum), 'bufnr': bufnr})
+            endfor
+            noautocmd wincmd p
+        else
+            let changelist = get(getchangelist(bufnr('%')), 0, [])
+            let bufnr = bufnr('%')
+            for entry in changelist
+                call extend(entry, {'text': getline(entry.lnum), 'bufnr': bufnr})
+            endfor
+        endif
+        " all entries should show some text, otherwise it's impossible to know
+        " what changed, and they're useless
+        call filter(changelist, { i,v -> !empty(v.text) })
+        return changelist
+
+    elseif a:cmd is# 'marks'
         if &bt is# 'quickfix'
             noautocmd call lg#window#qf_open('loc')
             let list = split(execute(a:cmd), '\n')
@@ -158,16 +180,6 @@ fu! s:convert(output, cmd, bang) abort "{{{1
         \ }})
 
     elseif a:cmd is# 'changes'
-        call map(a:output, { i,v -> {
-        \                             'lnum':  matchstr(v, '\v^%(\s+\d+){1}\s+\zs\d+'),
-        \                             'col':   matchstr(v, '\v^%(\s+\d+){2}\s+\zs\d+'),
-        \                             'text':  matchstr(v, '\v^%(\s+\d+){3}\s+\zs.*'),
-        \                             'bufnr': bufnr(''),
-        \                           }
-        \                  })
-        " all entries should show some text, otherwise it's impossible to know
-        " what changed, and they're useless
-        call filter(a:output, { i,v -> !empty(v.text) })
 
     elseif a:cmd is# 'jumps'
         " Why?
