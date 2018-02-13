@@ -124,14 +124,14 @@ fu! s:capture_cmd_local_to_window(cmd, pat) abort "{{{1
     elseif a:cmd is# 'changes'
         if &bt is# 'quickfix'
             noautocmd call lg#window#qf_open('loc')
-            let changelist = get(getchangelist(bufnr('%')), 0, [])
+            let changelist = get(getchangelist('%'), 0, [])
             let bufnr = bufnr('%')
             for entry in changelist
                 call extend(entry, {'text': getline(entry.lnum), 'bufnr': bufnr})
             endfor
             noautocmd wincmd p
         else
-            let changelist = get(getchangelist(bufnr('%')), 0, [])
+            let changelist = get(getchangelist('%'), 0, [])
             let bufnr = bufnr('%')
             for entry in changelist
                 call extend(entry, {'text': getline(entry.lnum), 'bufnr': bufnr})
