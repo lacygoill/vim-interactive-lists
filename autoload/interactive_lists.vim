@@ -70,6 +70,9 @@ fu! interactive_lists#all_matches_in_buffer() abort "{{{1
         call win_gotoid(id)
         call winrestview(view)
     endtry
+    if getbufvar(winbufnr(winnr('#')), '&bt', '') is# 'quickfix'
+        wincmd p
+    endif
 endfu
 
 fu! s:capture(cmd) abort "{{{1
