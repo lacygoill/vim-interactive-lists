@@ -3,6 +3,7 @@ fu! interactive_lists#all_matches_in_buffer() abort "{{{1
     "
     "         keepj g//#
 
+    let id = win_getid()
     let view = winsaveview()
     try
         " Why `:exe`?{{{
@@ -56,14 +57,16 @@ fu! interactive_lists#all_matches_in_buffer() abort "{{{1
         "     endif
         "}}}
         exe 'lvim //g %'
-        call winrestview(view)
-        wincmd p
+        lopen
         if &bt is# 'quickfix'
             call qf#set_matches('vimrc:all_matches_in_buffer', 'Conceal', 'location')
             call qf#create_matches()
         endif
     catch
         return lg#catch_error()
+    finally
+        call win_gotoid(id)
+        call winrestview(view)
     endtry
 endfu
 
