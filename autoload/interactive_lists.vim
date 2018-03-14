@@ -88,7 +88,7 @@ fu! s:capture(cmd) abort "{{{1
         let list = s:capture_cmd_local_to_window('marks', '\v^\s+\S+%(\s+\d+){2}')
 
     elseif a:cmd is# 'number'
-        let pos = getcurpos('.')
+        let pos = getcurpos()
         let list = split(execute('keepj '.getcmdline(), ''), '\n')
         call setpos('.', pos)
 
