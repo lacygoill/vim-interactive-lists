@@ -120,13 +120,13 @@ fu! s:capture_cmd_local_to_window(cmd, pat) abort "{{{1
             noautocmd call lg#window#qf_open('loc')
             let jumplist = get(getjumplist(), 0, [])
             call map(jumplist, {i,v -> extend(v,
-            \        {'text': bufnr('%') ==# v.bufnr ? getline(v.lnum) : bufname(v.bufnr)})})
+            \        {'text': bufnr('%') == v.bufnr ? getline(v.lnum) : bufname(v.bufnr)})})
             noautocmd wincmd p
             return jumplist
         else
             let jumplist = get(getjumplist(), 0, [])
             return map(jumplist, {i,v -> extend(v,
-            \          {'text': bufnr('%') ==# v.bufnr ? getline(v.lnum) : bufname(v.bufnr)})})
+            \          {'text': bufnr('%') == v.bufnr ? getline(v.lnum) : bufname(v.bufnr)})})
         endif
 
     elseif a:cmd is# 'changes'
@@ -177,7 +177,7 @@ fu! s:convert(output, cmd, bang) abort "{{{1
         \        'text': printf(' %*d%s%s%s%s%s %s',
         \                        len(bufnr('$')), v,
         \                       !buflisted(v) ? 'u': ' ',
-        \                       v ==# bufnr('%') ? '%' : v ==# bufnr('#') ? '#' : ' ',
+        \                       v == bufnr('%') ? '%' : v == bufnr('#') ? '#' : ' ',
         \                       empty(win_findbuf(v)) ? 'h' : 'a',
         \                       getbufvar(v, '&ma', 0) ? ' ' : '-',
         \                       getbufvar(v, '&mod', 0) ? '+' : ' ',
@@ -376,7 +376,7 @@ fu! interactive_lists#set_or_go_to_mark(action) abort "{{{1
     " if it's not a global one, just type the keys as usual
     "     • mx
     "     • 'x
-    if index(range(char2nr('A'), char2nr('Z')), char2nr(mark)) ==# -1
+    if index(range(char2nr('A'), char2nr('Z')), char2nr(mark)) == -1
         return feedkeys((a:action is# 'set' ? 'm' : "'").mark, 'int')
     endif
 
