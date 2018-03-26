@@ -306,10 +306,10 @@ fu! interactive_lists#main(cmd, bang) abort "{{{1
 
         if empty(list)
             return a:cmd is# 'args'
-            \?         'echoerr "No arguments"'
-            \:     a:cmd is# 'number'
-            \?         cmdline
-            \:         'echoerr "No output"'
+               \ ?     'echoerr "No arguments"'
+               \ : a:cmd is# 'number'
+               \ ?     cmdline
+               \ :     'echoerr "No output"'
         endif
 
         call setloclist(0, list)
@@ -326,8 +326,8 @@ fu! interactive_lists#main(cmd, bang) abort "{{{1
         endif
     catch
         return a:cmd is# 'number'
-        \?         cmdline
-        \:         lg#catch_error()
+           \ ?     cmdline
+           \ :     lg#catch_error()
     endtry
     return ''
 endfu
