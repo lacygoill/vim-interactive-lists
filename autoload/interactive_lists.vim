@@ -56,10 +56,10 @@ fu! interactive_lists#all_matches_in_buffer() abort "{{{1
         "         let w:quickfix_title = ':'.matchstr(w:quickfix_title, ':\s*\zs\S.*')
         "     endif
         "}}}
-        exe 'lvim //gj %'
-        "            │
-        "            └ don't jump to the first entry;
-        "              stay in the qf window
+        noa exe 'lvim //gj %'
+        "                │
+        "                └ don't jump to the first entry;
+        "                  stay in the qf window
         if &bt is# 'quickfix'
             call qf#set_matches('vimrc:all_matches_in_buffer', 'Conceal', 'location')
             call qf#create_matches()
