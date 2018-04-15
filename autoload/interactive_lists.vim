@@ -60,6 +60,7 @@ fu! interactive_lists#all_matches_in_buffer() abort "{{{1
         "                │
         "                └ don't jump to the first entry;
         "                  stay in the qf window
+        lwindow
         if &bt is# 'quickfix'
             call qf#set_matches('vimrc:all_matches_in_buffer', 'Conceal', 'location')
             call qf#create_matches()
