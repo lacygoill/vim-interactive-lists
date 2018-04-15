@@ -56,7 +56,7 @@ fu! interactive_lists#all_matches_in_buffer() abort "{{{1
         "         let w:quickfix_title = ':'.matchstr(w:quickfix_title, ':\s*\zs\S.*')
         "     endif
         "}}}
-        noa exe 'lvim //gj %'
+        exe 'noa lvim //gj %'
         "                │
         "                └ don't jump to the first entry;
         "                  stay in the qf window
