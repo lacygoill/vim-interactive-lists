@@ -118,11 +118,11 @@ fu! s:capture_cmd_local_to_window(cmd, pat) abort "{{{1
     " associated window. Same thing for the jumplist and the local marks.
     if a:cmd is# 'jumps'
         if &bt is# 'quickfix'
-            noautocmd call lg#window#qf_open('loc')
+            noa call lg#window#qf_open('loc')
             let jumplist = get(getjumplist(), 0, [])
             call map(jumplist, {i,v -> extend(v,
             \        {'text': bufnr('%') ==# v.bufnr ? getline(v.lnum) : bufname(v.bufnr)})})
-            noautocmd wincmd p
+            noa wincmd p
             return jumplist
         else
             let jumplist = get(getjumplist(), 0, [])
@@ -132,13 +132,13 @@ fu! s:capture_cmd_local_to_window(cmd, pat) abort "{{{1
 
     elseif a:cmd is# 'changes'
         if &bt is# 'quickfix'
-            noautocmd call lg#window#qf_open('loc')
+            noa call lg#window#qf_open('loc')
             let changelist = get(getchangelist('%'), 0, [])
             let bufnr = bufnr('%')
             for entry in changelist
                 call extend(entry, {'text': getline(entry.lnum), 'bufnr': bufnr})
             endfor
-            noautocmd wincmd p
+            noa wincmd p
         else
             let changelist = get(getchangelist('%'), 0, [])
             let bufnr = bufnr('%')
@@ -153,9 +153,9 @@ fu! s:capture_cmd_local_to_window(cmd, pat) abort "{{{1
 
     elseif a:cmd is# 'marks'
         if &bt is# 'quickfix'
-            noautocmd call lg#window#qf_open('loc')
+            noa call lg#window#qf_open('loc')
             let list = split(execute(a:cmd), '\n')
-            noautocmd wincmd p
+            noa wincmd p
         else
             let list = split(execute(a:cmd), '\n')
         endif
