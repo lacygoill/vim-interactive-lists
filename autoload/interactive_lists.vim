@@ -342,11 +342,7 @@ fu! s:open_qf(cmd) abort "{{{1
     "
     " So,  we just  emit the  event `QuickFixCmdPost`.  `vim-qf` has  an autocmd
     " listening to it.
-    doautocmd <nomodeline> QuickFixCmdPost lopen
-
-    if &bt isnot# 'quickfix'
-        return
-    endif
+    do <nomodeline> QuickFixCmdPost lopen
 
     let pat = {
     \           'args'      : '.*|\s*|\s*',
