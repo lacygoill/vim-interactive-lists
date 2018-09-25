@@ -105,7 +105,7 @@ fu! s:capture(cmd) abort "{{{1
         let list = split(execute('old'), '\n')
 
     elseif a:cmd is# 'registers'
-        let list = [ '"', '+', '-', '*', '/', '=' ]
+        let list = ['"', '+', '-', '*', '/', '=']
         call extend(list, map(range(48,57)+range(97,122), { i,v -> nr2char(v,1) }))
     endif
     return list
