@@ -20,7 +20,7 @@ fu! interactive_lists#all_matches_in_buffer() abort "{{{1
         "
         "     cd
         "     :lopen
-        "         → title = ':lvim /./ %'    ✔
+        "     title = ':lvim /./ %'    ✔~
         "
         "     nno  cd  :call Func()<cr>
         "     fu! Func() abort
@@ -29,10 +29,10 @@ fu! interactive_lists#all_matches_in_buffer() abort "{{{1
         "     endfu
         "
         "     cd
-        "         → title = ':    lvim /./ %'
-        "                     ^^^^
-        "                      ✘ because `:lvim` is executed from a line
-        "                        with a level of indentation of 4 spaces
+        "     title = ':    lvim /./ %'~
+        "               ^^^^
+        "               ✘ because `:lvim` is executed from a line~
+        "                 with a level of indentation of 4 spaces~
         "
         "     nno  cd  :call Func()<cr>
         "     fu! Func() abort
@@ -43,10 +43,10 @@ fu! interactive_lists#all_matches_in_buffer() abort "{{{1
         "     endfu
         "
         "     cd
-        "         → title = ':        lvim /./ %'
-        "                     ^^^^^^^^
-        "                      ✘ because `:lvim` is executed from a line
-        "                        with a level of indentation of 8 spaces
+        "     title = ':        lvim /./ %'~
+        "               ^^^^^^^^
+        "                ✘ because `:lvim` is executed from a line~
+        "                  with a level of indentation of 8 spaces~
         "}}}
         " Is there an alternative?{{{
         "
@@ -199,7 +199,7 @@ fu! s:convert(output, cmd, bang) abort "{{{1
         " In the process, this buffer n°1 is probably wiped.
         call filter(a:output, {i,v -> bufexists(v.bufnr)})
 
-    " :Marks! → local marks only
+    " `:Marks!` → local marks only
     elseif a:cmd is# 'marks' && a:bang
         call map(a:output, { i,v -> {
         \                             'mark_name':  matchstr(v, '\S\+'),
@@ -240,7 +240,7 @@ fu! s:convert(output, cmd, bang) abort "{{{1
             call remove(mark, 'mark_name')
         endfor
 
-    " :Marks  → global marks only
+    " `:Marks`  → global marks only
     elseif a:cmd is# 'marks' && !a:bang
         if !filereadable($HOME.'/.vim/bookmarks')
             return []

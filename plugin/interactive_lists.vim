@@ -48,7 +48,7 @@ nno  <silent><unique>  g:r  :<c-u>exe interactive_lists#main('registers', 0)<cr>
 "
 "         :echo 'hello' C-x C-x
 "         :echo output
-"             → ∅    ✘
+"         ∅    ✘~
 
 "         cno  <c-x><c-x>  <c-\>eFunc()<cr>
 "
@@ -60,7 +60,7 @@ nno  <silent><unique>  g:r  :<c-u>exe interactive_lists#main('registers', 0)<cr>
 "
 "         :echo 'hello' C-x C-x
 "         :echo output
-"             → hello    ✔
+"         hello    ✔~
 "
 " Update:
 "
