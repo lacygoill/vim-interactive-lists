@@ -78,9 +78,9 @@ cno  <unique>  <c-\>n  <c-\>einteractive_lists#main('number', 0)<cr>
 " Unfortunately, it doesn't work when we load a file with a global mark.
 " Indeed, the global mark contains several info (`:marks`):
 "
-"         • path to file
-"         • line nr
-"         • column nr
+"         - path to file
+"         - line nr
+"         - column nr
 "
 " When we load a file with a global mark, Vim will position the cursor on the
 " line where we saved the mark.

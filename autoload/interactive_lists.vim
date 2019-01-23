@@ -371,8 +371,8 @@ fu! interactive_lists#set_or_go_to_mark(action) abort "{{{1
     endif
 
     " if it's not a global one, just type the keys as usual
-    "     • mx
-    "     • 'x
+    "     - mx
+    "     - 'x
     if index(range(char2nr('A'), char2nr('Z')), char2nr(mark)) ==# -1
         return feedkeys((a:action is# 'set' ? 'm' : "'").mark, 'int')
     endif
