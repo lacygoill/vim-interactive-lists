@@ -346,7 +346,7 @@ fu! s:open_qf(cmd) abort "{{{1
 
     let pat = {
     \           'args'      : '.*|\s*|\s*',
-    \           'changes'   : '^\v.{-}\|\s*\d+%(\s+col\s+\d+\s*)?\s*\|\s?',
+    \           'changes'   : 'location',
     \           'jumps'     : '^.\{-}\ze|',
     \           'ls'        : '\v.*\|\s*\|\s*\ze%(\[No Name\]\s*)?.*$',
     \           'marks'     : '\v^.{-}\|.{-}\|\s*',
