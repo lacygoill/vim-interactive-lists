@@ -370,11 +370,16 @@ fu! interactive_lists#set_or_go_to_mark(action) abort "{{{1
         return
     endif
 
-    " if it's not a global one, just type the keys as usual
-    "     - mx
-    "     - 'x
+    " If it's not a global one, just type the keys as usual (with one difference):{{{
+    "
+    "    - mx
+    "    - `x
+    "      ^
+    "      let's use backtick instead of a single quote, so that we land on the exact column
+    "      rationale: the single quote key is easier to type
+    "}}}
     if index(range(char2nr('A'), char2nr('Z')), char2nr(mark)) ==# -1
-        return feedkeys((a:action is# 'set' ? 'm' : "'").mark, 'int')
+        return feedkeys((a:action is# 'set' ? 'm' : "`").mark, 'int')
     endif
 
     " now, we process a global mark
