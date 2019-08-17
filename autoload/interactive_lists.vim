@@ -379,7 +379,7 @@ fu! interactive_lists#set_or_go_to_mark(action) abort "{{{1
     "      rationale: the single quote key is easier to type
     "}}}
     if index(range(char2nr('A'), char2nr('Z')), char2nr(mark)) ==# -1
-        return feedkeys((a:action is# 'set' ? 'm' : "`").mark, 'int')
+        return feedkeys((a:action is# 'set' ? 'm' : "`").mark, 'in')
     endif
 
     " now, we process a global mark
@@ -418,5 +418,5 @@ fu! interactive_lists#set_or_go_to_mark(action) abort "{{{1
         endtry
     endif
     " re-mark the file, to fix Vim's frequent and unavoidable lost marks
-    call feedkeys('m'.mark, 'int')
+    call feedkeys('m'.mark, 'in')
 endfu
