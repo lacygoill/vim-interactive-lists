@@ -79,10 +79,10 @@ endfu
 fu! s:capture(cmd) abort "{{{1
     if a:cmd is# 'args'
         let list = argv()
-        call map(list, { i,v -> {
-        \                         'filename': v,
-        \                         'text': fnamemodify(v, ':t'),
-        \                       } })
+        call map(list, {_,v -> {
+        \                        'filename': v,
+        \                        'text': fnamemodify(v, ':t'),
+        \                      } })
 
     elseif a:cmd is# 'changes'
         let list = s:capture_cmd_local_to_window('changes', '\v^%(\s+\d+){3}')
@@ -106,7 +106,7 @@ fu! s:capture(cmd) abort "{{{1
 
     elseif a:cmd is# 'registers'
         let list = ['"', '+', '-', '*', '/', '=']
-        call extend(list, map(range(48,57)+range(97,122), { i,v -> nr2char(v,1) }))
+        call extend(list, map(range(48,57)+range(97,122), {_,v -> nr2char(v,1)}))
     endif
     return list
 endfu
@@ -120,13 +120,13 @@ fu! s:capture_cmd_local_to_window(cmd, pat) abort "{{{1
         if &bt is# 'quickfix'
             noa call lg#window#qf_open('loc')
             let jumplist = get(getjumplist(), 0, [])
-            call map(jumplist, {i,v -> extend(v,
+            call map(jumplist, {_,v -> extend(v,
             \        {'text': bufnr('%') ==# v.bufnr ? getline(v.lnum) : bufname(v.bufnr)})})
             noa wincmd p
             return jumplist
         else
             let jumplist = get(getjumplist(), 0, [])
-            return map(jumplist, {i,v -> extend(v,
+            return map(jumplist, {_,v -> extend(v,
             \          {'text': bufnr('%') ==# v.bufnr ? getline(v.lnum) : bufname(v.bufnr)})})
         endif
 
@@ -148,7 +148,7 @@ fu! s:capture_cmd_local_to_window(cmd, pat) abort "{{{1
         endif
         " all entries should show some text, otherwise it's impossible to know
         " what changed, and they're useless
-        call filter(changelist, { i,v -> !empty(v.text) })
+        call filter(changelist, {_,v -> !empty(v.text)})
         return changelist
 
     elseif a:cmd is# 'marks'
@@ -159,13 +159,13 @@ fu! s:capture_cmd_local_to_window(cmd, pat) abort "{{{1
         else
             let list = split(execute(a:cmd), '\n')
         endif
-        return filter(list, { i,v -> v =~ a:pat })
+        return filter(list, {_,v -> v =~ a:pat})
     endif
 endfu
 
 fu! s:convert(output, cmd, bang) abort "{{{1
     if a:cmd is# 'ls'
-        call filter(a:output, a:bang ? { i,v -> bufexists(v) } : { i,v -> buflisted(v) })
+        call filter(a:output, a:bang ? {_,v -> bufexists(v)} : {_,v -> buflisted(v)})
         " Why is the first character in `printf()` a no-break space?{{{
         "
         " Because, by default, Vim reduces all leading spaces in the text to a single space.
@@ -173,7 +173,7 @@ fu! s:convert(output, cmd, bang) abort "{{{1
         " right aligned in their field. So, we prefix the text with a character which is not
         " a whitespace, but looks like one.
         "}}}
-        call map(a:output, { i,v -> {
+        call map(a:output, {_,v -> {
         \        'bufnr': v,
         \        'text': printf(' %*d%s%s%s%s%s %s',
         \                        len(bufnr('$')), v,
@@ -197,17 +197,17 @@ fu! s:convert(output, cmd, bang) abort "{{{1
         " The issue may  come from the fact  that when we start Vim,  we have an
         " unnamed and empty buffer. Then, Vim restores a session automatically.
         " In the process, this buffer n°1 is probably wiped.
-        call filter(a:output, {i,v -> bufexists(v.bufnr)})
+        call filter(a:output, {_,v -> bufexists(v.bufnr)})
 
     " `:Marks!` → local marks only
     elseif a:cmd is# 'marks' && a:bang
-        call map(a:output, { i,v -> {
-        \                             'mark_name':  matchstr(v, '\S\+'),
-        \                             'lnum':       matchstr(v, '\v^\s*\S+\s+\zs\d+'),
-        \                             'col':        matchstr(v, '\v^\s*\S+%(\s+\zs\d+){2}'),
-        \                             'text':       matchstr(v, '\v^\s*\S+%(\s+\d+){2}\s+\zs.*'),
-        \                             'filename':   matchstr(v, '\v^\s*\S+%(\s+\d+){2}\s+\zs.*'),
-        \                           }
+        call map(a:output, {_,v -> {
+        \                            'mark_name':  matchstr(v, '\S\+'),
+        \                            'lnum':       matchstr(v, '\v^\s*\S+\s+\zs\d+'),
+        \                            'col':        matchstr(v, '\v^\s*\S+%(\s+\zs\d+){2}'),
+        \                            'text':       matchstr(v, '\v^\s*\S+%(\s+\d+){2}\s+\zs.*'),
+        \                            'filename':   matchstr(v, '\v^\s*\S+%(\s+\d+){2}\s+\zs.*'),
+        \                          }
         \                  })
 
         "                             ┌─ `remove()` returns the removed item,
@@ -227,7 +227,7 @@ fu! s:convert(output, cmd, bang) abort "{{{1
 
         " remove possible empty dictionaries  which may have appeared after previous
         " `map()` invocation
-        call filter(a:output, { i,v -> !empty(v) })
+        call filter(a:output, {_,v -> !empty(v)})
 
         " When we iterate  over the dictionaries (`mark`)  stored in `a:output`,
         " we have access to the original dictionaries, not copies.
@@ -247,27 +247,27 @@ fu! s:convert(output, cmd, bang) abort "{{{1
         endif
         let bookmarks = readfile($HOME.'/.vim/bookmarks')
 
-        call map(bookmarks, { i,v -> {
-        \                             'text':       v[0].'  '.fnamemodify(matchstr(v, ':\zs.*'), ':t'),
-        \                             'filename':   expand(matchstr(v, ':\zs.*')),
-        \                           }
+        call map(bookmarks, {_,v -> {
+        \                            'text':     v[0].'  '.fnamemodify(matchstr(v, ':\zs.*'), ':t'),
+        \                            'filename': expand(matchstr(v, ':\zs.*')),
+        \                          }
         \                  })
 
         return bookmarks
 
     elseif a:cmd is# 'number'
-        call map(a:output, { i,v -> {
-        \                             'filename' : expand('%:p'),
-        \                             'lnum'     : matchstr(v, '\v^\s*\zs\d+'),
-        \                             'text'     : matchstr(v, '\v^\s*\d+\s\zs.*'),
-        \                           }
+        call map(a:output, {_,v -> {
+        \                            'filename' : expand('%:p'),
+        \                            'lnum'     : matchstr(v, '\v^\s*\zs\d+'),
+        \                            'text'     : matchstr(v, '\v^\s*\d+\s\zs.*'),
+        \                          }
         \                  })
 
     elseif a:cmd is# 'oldfiles'
-        call map(a:output, { i,v -> {
-        \                             'filename' : expand(matchstr(v, '\v^\d+:\s\zs.*')),
-        \                             'text'     : fnamemodify(matchstr(v, '\v^\d+:\s\zs.*'), ':t'),
-        \                           }
+        call map(a:output, {_,v -> {
+        \                            'filename' : expand(matchstr(v, '\v^\d+:\s\zs.*')),
+        \                            'text'     : fnamemodify(matchstr(v, '\v^\d+:\s\zs.*'), ':t'),
+        \                          }
         \                  })
 
     elseif a:cmd is# 'registers'
@@ -275,17 +275,17 @@ fu! s:convert(output, cmd, bang) abort "{{{1
         " Why?
         " After pressing `g:r`, Vim would load buffers "a", "b", …
         " They would pollute the buffer list (`:ls!`).
-        call map(a:output, { i,v -> { 'text': v } })
+        call map(a:output, {_,v -> {'text': v}})
 
         " We pass `1` as a 2nd argument to `getreg()`.
         " It's ignored  for most registers,  but useful for the  expression register.
         " It allows to get the expression  itself, not its current value which could
         " not exist anymore (ex: a:arg)
-        call map(a:output, { i,v -> extend(v, {
-        \                                       'text':  v.text
-        \                                               .'    '
-        \                                               .getreg(v.text, 1)
-        \                                     })
+        call map(a:output, {_,v -> extend(v, {
+        \                                      'text':  v.text
+        \                                              .'    '
+        \                                              .getreg(v.text, 1)
+        \                                    })
         \                  })
 
     endif
@@ -394,7 +394,7 @@ fu! interactive_lists#set_or_go_to_mark(action) abort "{{{1
     if a:action is# 'set'
         "                   ┌ eliminate old mark if it's present
         "                   │
-        let new_bookmarks = filter(readfile(book_file), {i,v -> v[0] isnot# mark})
+        let new_bookmarks = filter(readfile(book_file), {_,v -> v[0] isnot# mark})
         \ +                 [mark.':'.substitute(expand('%:p'), $HOME, '$HOME', '')]
         " │
         " └ and bookmark current file
@@ -402,7 +402,7 @@ fu! interactive_lists#set_or_go_to_mark(action) abort "{{{1
 
     " we JUMP to a global mark
     else
-        let path = filter(readfile(book_file), {i,v -> v[0] is# mark})
+        let path = filter(readfile(book_file), {_,v -> v[0] is# mark})
         if empty(path)
             return
         endif
