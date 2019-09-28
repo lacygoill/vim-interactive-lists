@@ -210,9 +210,9 @@ fu! s:convert(output, cmd, bang) abort "{{{1
         \                          }
         \                  })
 
-        "                             ┌─ `remove()` returns the removed item,
-        "                             │  but `extend()` does NOT return the added item;
-        "                             │  instead returns the new extended dictionary
+        "                             ┌ `remove()` returns the removed item,
+        "                             │ but `extend()` does NOT return the added item;
+        "                             │ instead returns the new extended dictionary
         "                             │
         let l:Local_mark  = { item -> extend(item, { 'filename': expand('%:p'),
         \                                            'text': item.mark_name.'    '.item.text }) }
