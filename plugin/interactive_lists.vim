@@ -33,7 +33,7 @@ nno  <silent><unique>  g:M  :<c-u>exe interactive_lists#main('marks', 1)<cr>
 nno  <silent><unique>  g:o  :<c-u>exe interactive_lists#main('oldfiles', 0)<cr>
 nno  <silent><unique>  g:r  :<c-u>exe interactive_lists#main('registers', 0)<cr>
 
-" Why don't we use <expr>?{{{
+" Why don't you use <expr>?{{{
 "
 " Even though we can capture `getcmdline()`, we don't seem to be able to capture
 " its output (`execute(getcmdline(), '')`). The issue comes from an interaction
@@ -69,7 +69,7 @@ nno  <silent><unique>  g:r  :<c-u>exe interactive_lists#main('registers', 0)<cr>
 " It's fixed in Vim 8.0.1425, but not yet in Neovim.
 
 "}}}
-cno  <unique>  <c-\>n  <c-\>einteractive_lists#main('number', 0)<cr>
+cno  <unique>  <c-\>n  <c-\>e interactive_lists#main('number', 0)<cr>
 
 " Why?{{{
 "
@@ -85,17 +85,17 @@ cno  <unique>  <c-\>n  <c-\>einteractive_lists#main('number', 0)<cr>
 " When we load a file with a global mark, Vim will position the cursor on the
 " line where we saved the mark.
 " But that's not what we want. We want the cursor to be on the last edit.
-" To fix this, we override all the 'A … 'Z commands so that after the loading
-" of a marked file, Vim types g`.
-
+" To fix this, we override all the 'A  ... 'Z commands so that after the loading
+" of a marked file, Vim presses g`.
+"
 " Also, Vim may erase a global mark  when it has to execute `:bwipe`. It happens
 " when we execute  `:vimgrep` to look for a  pattern in a set of  files, and the
 " latter contains a file with a global mark which doesn't contain the pattern:
 "
-"             https://github.com/vim/vim/issues/2166
-
+" https://github.com/vim/vim/issues/2166
+"
 " So, all in all, the global marks system is pretty broken.
-
+"
 " We re-implement it completely and save the paths in a bookmark file.
 "
 " Don't rely on  the existing mechanism, it's fucked up  beyond any repair.

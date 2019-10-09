@@ -121,13 +121,13 @@ fu! s:capture_cmd_local_to_window(cmd, pat) abort "{{{1
             noa call lg#window#qf_open('loc')
             let jumplist = get(getjumplist(), 0, [])
             call map(jumplist, {_,v -> extend(v,
-            \        {'text': bufnr('%') ==# v.bufnr ? getline(v.lnum) : bufname(v.bufnr)})})
+            \        {'text': bufnr('%') == v.bufnr ? getline(v.lnum) : bufname(v.bufnr)})})
             noa wincmd p
             return jumplist
         else
             let jumplist = get(getjumplist(), 0, [])
             return map(jumplist, {_,v -> extend(v,
-            \          {'text': bufnr('%') ==# v.bufnr ? getline(v.lnum) : bufname(v.bufnr)})})
+            \          {'text': bufnr('%') == v.bufnr ? getline(v.lnum) : bufname(v.bufnr)})})
         endif
 
     elseif a:cmd is# 'changes'
@@ -178,7 +178,7 @@ fu! s:convert(output, cmd, bang) abort "{{{1
         \        'text': printf(' %*d%s%s%s%s%s %s',
         \                        len(bufnr('$')), v,
         \                       !buflisted(v) ? 'u': ' ',
-        \                       v ==# bufnr('%') ? '%' : v ==# bufnr('#') ? '#' : ' ',
+        \                       v == bufnr('%') ? '%' : v == bufnr('#') ? '#' : ' ',
         \                       empty(win_findbuf(v)) ? 'h' : 'a',
         \                       getbufvar(v, '&ma', 0) ? ' ' : '-',
         \                       getbufvar(v, '&mod', 0) ? '+' : ' ',
@@ -378,7 +378,7 @@ fu! interactive_lists#set_or_go_to_mark(action) abort "{{{1
     "      let's use backtick instead of a single quote, so that we land on the exact column
     "      rationale: the single quote key is easier to type
     "}}}
-    if index(range(char2nr('A'), char2nr('Z')), char2nr(mark)) ==# -1
+    if index(range(char2nr('A'), char2nr('Z')), char2nr(mark)) == -1
         return feedkeys((a:action is# 'set' ? 'm' : "`").mark, 'in')
     endif
 
