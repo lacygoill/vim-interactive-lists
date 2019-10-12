@@ -1,4 +1,4 @@
-fu! interactive_lists#all_matches_in_buffer() abort "{{{1
+fu interactive_lists#all_matches_in_buffer() abort "{{{1
     " Alternative:
     "
     "         keepj g//#
@@ -23,7 +23,7 @@ fu! interactive_lists#all_matches_in_buffer() abort "{{{1
         "     title = ':lvim /./ %'    ✔~
         "
         "     nno  cd  :call Func()<cr>
-        "     fu! Func() abort
+        "     fu Func() abort
         "         lvim /./ %
         "         lopen
         "     endfu
@@ -35,7 +35,7 @@ fu! interactive_lists#all_matches_in_buffer() abort "{{{1
         "                 with a level of indentation of 4 spaces~
         "
         "     nno  cd  :call Func()<cr>
-        "     fu! Func() abort
+        "     fu Func() abort
         "         try
         "             lvim /./ %
         "             lopen
@@ -76,7 +76,7 @@ fu! interactive_lists#all_matches_in_buffer() abort "{{{1
     endif
 endfu
 
-fu! s:capture(cmd) abort "{{{1
+fu s:capture(cmd) abort "{{{1
     if a:cmd is# 'args'
         let list = argv()
         call map(list, {_,v -> {
@@ -105,13 +105,20 @@ fu! s:capture(cmd) abort "{{{1
         let list = split(execute('old'), '\n')
 
     elseif a:cmd is# 'registers'
-        let list = ['"', '+', '-', '*', '/', '=']
+        let list =<< trim END
+            "
+            +
+            -
+            *
+            /
+            =
+        END
         call extend(list, map(range(48,57)+range(97,122), {_,v -> nr2char(v,1)}))
     endif
     return list
 endfu
 
-fu! s:capture_cmd_local_to_window(cmd, pat) abort "{{{1
+fu s:capture_cmd_local_to_window(cmd, pat) abort "{{{1
     " The changelist  is local  to a  window.
     " If we  are in a  location window,  `g:c` will show  us the changes  in the
     " latter.   But, we  are NOT  interested in  them. We want  the ones  in the
@@ -163,7 +170,7 @@ fu! s:capture_cmd_local_to_window(cmd, pat) abort "{{{1
     endif
 endfu
 
-fu! s:convert(output, cmd, bang) abort "{{{1
+fu s:convert(output, cmd, bang) abort "{{{1
     if a:cmd is# 'ls'
         call filter(a:output, a:bang ? {_,v -> bufexists(v)} : {_,v -> buflisted(v)})
         " Why is the first character in `printf()` a no-break space?{{{
@@ -292,7 +299,7 @@ fu! s:convert(output, cmd, bang) abort "{{{1
     return a:output
 endfu
 
-fu! interactive_lists#main(cmd, bang) abort "{{{1
+fu interactive_lists#main(cmd, bang) abort "{{{1
     try
         let cmdline = getcmdline()
         if a:cmd is# 'number' && cmdline[-1:-1] isnot# '#'
@@ -333,7 +340,7 @@ fu! interactive_lists#main(cmd, bang) abort "{{{1
     return ''
 endfu
 
-fu! s:open_qf(cmd) abort "{{{1
+fu s:open_qf(cmd) abort "{{{1
     " We don't want to open the qf  window directly, because it's the job of our
     " `vim-qf` plugin. The latter uses some logic to decide the position and the
     " size of the qf window.
@@ -363,7 +370,7 @@ fu! s:open_qf(cmd) abort "{{{1
     call qf#create_matches()
 endfu
 
-fu! interactive_lists#set_or_go_to_mark(action) abort "{{{1
+fu interactive_lists#set_or_go_to_mark(action) abort "{{{1
     " ask for a mark
     let mark = nr2char(getchar(),1)
     if mark is# "\e"

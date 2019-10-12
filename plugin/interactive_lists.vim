@@ -41,7 +41,7 @@ nno  <silent><unique>  g:r  :<c-u>exe interactive_lists#main('registers', 0)<cr>
 
 "         cno  <expr>  <c-x><c-x>  Func()
 "
-"         fu! Func() abort
+"         fu Func() abort
 "             let g:output = execute(getcmdline(), '')
 "             return ''
 "         endfu
@@ -52,7 +52,7 @@ nno  <silent><unique>  g:r  :<c-u>exe interactive_lists#main('registers', 0)<cr>
 
 "         cno  <c-x><c-x>  <c-\>eFunc()<cr>
 "
-"         fu! Func() abort
+"         fu Func() abort
 "             let cmdline = getcmdline()
 "             let g:output = execute(cmdline)
 "             return cmdline
