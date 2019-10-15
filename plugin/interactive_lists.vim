@@ -21,17 +21,17 @@ let g:loaded_interactive_lists = 1
 "                                   `:ilist` doesn't add anchors (\<, \>)
 "                                   contrary to the default `:ilist`
 "}}}
-nno  <silent><unique>  g::  :<c-u>call interactive_lists#all_matches_in_buffer()<cr>
+nno <silent><unique> g:: :<c-u>call interactive_lists#all_matches_in_buffer()<cr>
 
-nno  <silent><unique>  g:a  :<c-u>exe interactive_lists#main('args', 0)<cr>
-nno  <silent><unique>  g:c  :<c-u>exe interactive_lists#main('changes', 0)<cr>
-nno  <silent><unique>  g:j  :<c-u>exe interactive_lists#main('jumps', 0)<cr>
-nno  <silent><unique>  g:l  :<c-u>exe interactive_lists#main('ls', 0)<cr>
-nno  <silent><unique>  g:L  :<c-u>exe interactive_lists#main('ls', 1)<cr>
-nno  <silent><unique>  g:m  :<c-u>exe interactive_lists#main('marks', 0)<cr>
-nno  <silent><unique>  g:M  :<c-u>exe interactive_lists#main('marks', 1)<cr>
-nno  <silent><unique>  g:o  :<c-u>exe interactive_lists#main('oldfiles', 0)<cr>
-nno  <silent><unique>  g:r  :<c-u>exe interactive_lists#main('registers', 0)<cr>
+nno <silent><unique> g:a :<c-u>exe interactive_lists#main('args', 0)<cr>
+nno <silent><unique> g:c :<c-u>exe interactive_lists#main('changes', 0)<cr>
+nno <silent><unique> g:j :<c-u>exe interactive_lists#main('jumps', 0)<cr>
+nno <silent><unique> g:l :<c-u>exe interactive_lists#main('ls', 0)<cr>
+nno <silent><unique> g:L :<c-u>exe interactive_lists#main('ls', 1)<cr>
+nno <silent><unique> g:m :<c-u>exe interactive_lists#main('marks', 0)<cr>
+nno <silent><unique> g:M :<c-u>exe interactive_lists#main('marks', 1)<cr>
+nno <silent><unique> g:o :<c-u>exe interactive_lists#main('oldfiles', 0)<cr>
+nno <silent><unique> g:r :<c-u>exe interactive_lists#main('registers', 0)<cr>
 
 " Why don't you use <expr>?{{{
 "
@@ -50,7 +50,7 @@ nno  <silent><unique>  g:r  :<c-u>exe interactive_lists#main('registers', 0)<cr>
 "         :echo output
 "         ∅    ✘~
 
-"         cno  <c-x><c-x>  <c-\>eFunc()<cr>
+"         cno  <c-x><c-x>  <c-\>e Func()<cr>
 "
 "         fu Func() abort
 "             let cmdline = getcmdline()
@@ -69,7 +69,7 @@ nno  <silent><unique>  g:r  :<c-u>exe interactive_lists#main('registers', 0)<cr>
 " It's fixed in Vim 8.0.1425, but not yet in Neovim.
 
 "}}}
-cno  <unique>  <c-\>n  <c-\>e interactive_lists#main('number', 0)<cr>
+cno <unique> <c-\>n <c-\>e interactive_lists#main('number', 0)<cr>
 
 " Why?{{{
 "
@@ -101,5 +101,5 @@ cno  <unique>  <c-\>n  <c-\>e interactive_lists#main('number', 0)<cr>
 " Don't rely on  the existing mechanism, it's fucked up  beyond any repair.
 " Don't even rely on `~/.viminfo`. It's another can of worms.
 "}}}
-nno  <silent><unique>  m  :<c-u>call interactive_lists#set_or_go_to_mark('set')<cr>
-nno  <silent><unique>  '  :<c-u>call interactive_lists#set_or_go_to_mark('go')<cr>
+nno <silent><unique> m :<c-u>call interactive_lists#set_or_go_to_mark('set')<cr>
+nno <silent><unique> ' :<c-u>call interactive_lists#set_or_go_to_mark('go')<cr>
