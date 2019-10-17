@@ -99,7 +99,7 @@ fu s:capture(cmd) abort "{{{1
     elseif a:cmd is# 'number'
         let pos = getcurpos()
         let list = split(execute('keepj '.getcmdline(), ''), '\n')
-        call cursor(pos[1:])
+        call setpos('.', pos)
 
     elseif a:cmd is# 'oldfiles'
         let list = split(execute('old'), '\n')
