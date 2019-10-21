@@ -106,12 +106,12 @@ fu s:capture(cmd) abort "{{{1
 
     elseif a:cmd is# 'registers'
         let list =<< trim END
-        "
-        +
-        -
-        *
-        /
-        =
+            "
+            +
+            -
+            *
+            /
+            =
         END
         call extend(list, map(range(48,57)+range(97,122), {_,v -> nr2char(v,1)}))
     endif
