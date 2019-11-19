@@ -119,13 +119,13 @@ fu s:capture(cmd) abort "{{{1
 endfu
 
 fu s:capture_cmd_local_to_window(cmd, pat) abort "{{{1
-    " The changelist  is local  to a  window.
+    " The changelist is local to a window.
     " If we  are in a  location window,  `g:c` will show  us the changes  in the
     " latter.   But, we  are NOT  interested in  them. We want  the ones  in the
     " associated window. Same thing for the jumplist and the local marks.
     if a:cmd is# 'jumps'
         if &bt is# 'quickfix'
-            noa call lg#window#qf_open('loc')
+            noa call lg#window#qf_open_or_focus('loc')
             let jumplist = get(getjumplist(), 0, [])
             call map(jumplist, {_,v -> extend(v,
             \        {'text': bufnr('%') == v.bufnr ? getline(v.lnum) : bufname(v.bufnr)})})
@@ -139,7 +139,7 @@ fu s:capture_cmd_local_to_window(cmd, pat) abort "{{{1
 
     elseif a:cmd is# 'changes'
         if &bt is# 'quickfix'
-            noa call lg#window#qf_open('loc')
+            noa call lg#window#qf_open_or_focus('loc')
             let changelist = get(getchangelist('%'), 0, [])
             let bufnr = bufnr('%')
             for entry in changelist
@@ -160,7 +160,7 @@ fu s:capture_cmd_local_to_window(cmd, pat) abort "{{{1
 
     elseif a:cmd is# 'marks'
         if &bt is# 'quickfix'
-            noa call lg#window#qf_open('loc')
+            noa call lg#window#qf_open_or_focus('loc')
             let list = split(execute(a:cmd), '\n')
             noa wincmd p
         else
