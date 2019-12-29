@@ -80,12 +80,12 @@ fu s:capture(cmd) abort "{{{1
     if a:cmd is# 'args'
         let list = argv()
         call map(list, {_,v -> {
-        \                        'filename': v,
-        \                        'text': fnamemodify(v, ':t'),
-        \                      } })
+            \ 'filename': v,
+            \ 'text': fnamemodify(v, ':t'),
+            \ }})
 
     elseif a:cmd is# 'changes'
-        let list = s:capture_cmd_local_to_window('changes', '\v^%(\s+\d+){3}')
+        let list = s:capture_cmd_local_to_window('changes', '^\%(\s\+\d\+\)\{3}')
 
     elseif a:cmd is# 'jumps'
         let list = s:capture_cmd_local_to_window('jumps', '^')
@@ -94,11 +94,11 @@ fu s:capture(cmd) abort "{{{1
         let list = range(1, bufnr('$'))
 
     elseif a:cmd is# 'marks'
-        let list = s:capture_cmd_local_to_window('marks', '\v^\s+\S+%(\s+\d+){2}')
+        let list = s:capture_cmd_local_to_window('marks', '^\s\+\S\+\%(\s\+\d\+\)\{2}')
 
     elseif a:cmd is# 'number'
         let pos = getcurpos()
-        let list = split(execute('keepj '.getcmdline(), ''), '\n')
+        let list = split(execute('keepj '..getcmdline(), ''), '\n')
         call setpos('.', pos)
 
     elseif a:cmd is# 'oldfiles'
@@ -128,13 +128,13 @@ fu s:capture_cmd_local_to_window(cmd, pat) abort "{{{1
             noa call lg#window#qf_open_or_focus('loc')
             let jumplist = get(getjumplist(), 0, [])
             call map(jumplist, {_,v -> extend(v,
-            \        {'text': bufnr('%') == v.bufnr ? getline(v.lnum) : bufname(v.bufnr)})})
+                \ {'text': bufnr('%') == v.bufnr ? getline(v.lnum) : bufname(v.bufnr)})})
             noa wincmd p
             return jumplist
         else
             let jumplist = get(getjumplist(), 0, [])
             return map(jumplist, {_,v -> extend(v,
-            \          {'text': bufnr('%') == v.bufnr ? getline(v.lnum) : bufname(v.bufnr)})})
+                \ {'text': bufnr('%') == v.bufnr ? getline(v.lnum) : bufname(v.bufnr)})})
         endif
 
     elseif a:cmd is# 'changes'
@@ -181,19 +181,18 @@ fu s:convert(output, cmd, bang) abort "{{{1
         " a whitespace, but looks like one.
         "}}}
         call map(a:output, {_,v -> {
-        \        'bufnr': v,
-        \        'text': printf(' %*d%s%s%s%s%s %s',
-        \                        len(bufnr('$')), v,
-        \                       !buflisted(v) ? 'u': ' ',
-        \                       v == bufnr('%') ? '%' : v == bufnr('#') ? '#' : ' ',
-        \                       empty(win_findbuf(v)) ? 'h' : 'a',
-        \                       getbufvar(v, '&ma', 0) ? ' ' : '-',
-        \                       getbufvar(v, '&mod', 0) ? '+' : ' ',
-        \                       empty(bufname(v))
-        \                         ?    '[No Name]'
-        \                         :     fnamemodify(bufname(v), ':t')
-        \                      )
-        \ }})
+            \ 'bufnr': v,
+            \ 'text': printf(' %*d%s%s%s%s%s %s',
+            \                 len(bufnr('$')), v,
+            \                !buflisted(v) ? 'u': ' ',
+            \                v == bufnr('%') ? '%' : v == bufnr('#') ? '#' : ' ',
+            \                empty(win_findbuf(v)) ? 'h' : 'a',
+            \                getbufvar(v, '&ma', 0) ? ' ' : '-',
+            \                getbufvar(v, '&mod', 0) ? '+' : ' ',
+            \                empty(bufname(v))
+            \                  ?    '[No Name]'
+            \                  :     fnamemodify(bufname(v), ':t')
+            \ )}})
 
     elseif a:cmd is# 'changes'
 
@@ -209,28 +208,28 @@ fu s:convert(output, cmd, bang) abort "{{{1
     " `:Marks!` → local marks only
     elseif a:cmd is# 'marks' && a:bang
         call map(a:output, {_,v -> {
-        \                            'mark_name':  matchstr(v, '\S\+'),
-        \                            'lnum':       matchstr(v, '\v^\s*\S+\s+\zs\d+'),
-        \                            'col':        matchstr(v, '\v^\s*\S+%(\s+\zs\d+){2}'),
-        \                            'text':       matchstr(v, '\v^\s*\S+%(\s+\d+){2}\s+\zs.*'),
-        \                            'filename':   matchstr(v, '\v^\s*\S+%(\s+\d+){2}\s+\zs.*'),
-        \                          }
-        \                  })
+            \ 'mark_name': matchstr(v, '\S\+'),
+            \ 'lnum':      matchstr(v, '^\s*\S\+\s\+\zs\d\+'),
+            \ 'col':       matchstr(v, '^\s*\S\+\%(\s\+\zs\d\+\)\{2}'),
+            \ 'text':      matchstr(v, '^\s*\S\+\%(\s\+\d\+\)\{2}\s\+\zs.*'),
+            \ 'filename':  matchstr(v, '^\s*\S\+\%(\s\+\d\+\)\{2}\s\+\zs.*'),
+            \ }})
 
         "                             ┌ `remove()` returns the removed item,
         "                             │ but `extend()` does NOT return the added item;
         "                             │ instead returns the new extended dictionary
         "                             │
-        let l:Local_mark  = { item -> extend(item, { 'filename': expand('%:p'),
-        \                                            'text': item.mark_name.'    '.item.text }) }
+        let l:Local_mark  = { item -> extend(item, {
+            \ 'filename': expand('%:p'),
+            \ 'text': item.mark_name..'    '..item.text
+            \ })}
 
         call map(a:output, printf(
-        \                          '%s ? %s : %s',
-        \                          'v:val.mark_name !~# "^\\u$"',
-        \                          'l:Local_mark(v:val)',
-        \                          '{}',
-        \                        )
-        \       )
+            \ '%s ? %s : %s',
+            \ 'v:val.mark_name !~# "^\\u$"',
+            \ 'l:Local_mark(v:val)',
+            \ '{}',
+            \ ))
 
         " remove possible empty dictionaries  which may have appeared after previous
         " `map()` invocation
@@ -249,33 +248,30 @@ fu s:convert(output, cmd, bang) abort "{{{1
 
     " `:Marks`  → global marks only
     elseif a:cmd is# 'marks' && !a:bang
-        if !filereadable($HOME.'/.vim/bookmarks')
+        if !filereadable($HOME..'/.vim/bookmarks')
             return []
         endif
-        let bookmarks = readfile($HOME.'/.vim/bookmarks')
+        let bookmarks = readfile($HOME..'/.vim/bookmarks')
 
         call map(bookmarks, {_,v -> {
-        \                            'text':     v[0].'  '.fnamemodify(matchstr(v, ':\zs.*'), ':t'),
-        \                            'filename': expand(matchstr(v, ':\zs.*')),
-        \                          }
-        \                  })
+            \ 'text': v[0]..'  '..fnamemodify(matchstr(v, ':\zs.*'), ':t'),
+            \ 'filename': expand(matchstr(v, ':\zs.*')),
+            \ }})
 
         return bookmarks
 
     elseif a:cmd is# 'number'
         call map(a:output, {_,v -> {
-        \                            'filename' : expand('%:p'),
-        \                            'lnum'     : matchstr(v, '\v^\s*\zs\d+'),
-        \                            'text'     : matchstr(v, '\v^\s*\d+\s\zs.*'),
-        \                          }
-        \                  })
+            \ 'filename' : expand('%:p'),
+            \ 'lnum'     : matchstr(v, '^\s*\zs\d\+'),
+            \ 'text'     : matchstr(v, '^\s*\d\+\s\zs.*'),
+            \ }})
 
     elseif a:cmd is# 'oldfiles'
         call map(a:output, {_,v -> {
-        \                            'filename' : expand(matchstr(v, '\v^\d+:\s\zs.*')),
-        \                            'text'     : fnamemodify(matchstr(v, '\v^\d+:\s\zs.*'), ':t'),
-        \                          }
-        \                  })
+            \ 'filename' : expand(matchstr(v, '^\d\+:\s\zs.*')),
+            \ 'text' : fnamemodify(matchstr(v, '^\d\+:\s\zs.*'), ':t'),
+            \ }})
 
     elseif a:cmd is# 'registers'
         " Do NOT use the `filename` key to store the name of the registers.
@@ -289,11 +285,8 @@ fu s:convert(output, cmd, bang) abort "{{{1
         " It allows to get the expression  itself, not its current value which could
         " not exist anymore (ex: a:arg)
         call map(a:output, {_,v -> extend(v, {
-        \                                      'text':  v.text
-        \                                              .'    '
-        \                                              .getreg(v.text, 1)
-        \                                    })
-        \                  })
+            \ 'text':  v.text..'    '..getreg(v.text, 1)
+            \ })})
 
     endif
     return a:output
@@ -321,11 +314,12 @@ fu interactive_lists#main(cmd, bang) abort "{{{1
         endif
 
         call setloclist(0, list)
-        call setloclist(0, [], 'a', { 'title': a:cmd is# 'marks'
-        \                                    ?     ':Marks' .(a:bang ? '!' : '')
-        \                                    : a:cmd is# 'number'
-        \                                    ?     ':'.cmdline
-        \                                    :     ':'.a:cmd.(a:bang ? '!' : '')})
+        call setloclist(0, [], 'a', {
+            \   'title': a:cmd is# 'marks'
+            \ ?     ':Marks'..(a:bang ? '!' : '')
+            \ : a:cmd is# 'number'
+            \ ?     ':'..cmdline
+            \ :     ':'..a:cmd..(a:bang ? '!' : '')})
 
         if a:cmd is# 'number'
             call timer_start(0, {_ -> s:open_qf('number') + feedkeys("\e", 'in')})
@@ -352,20 +346,20 @@ fu s:open_qf(cmd) abort "{{{1
     do <nomodeline> QuickFixCmdPost lopen
 
     let pat = {
-    \           'args'      : '.*|\s*|\s*',
-    \           'changes'   : 'location',
-    \           'jumps'     : '^.\{-}\ze|',
-    \           'ls'        : '\v.*\|\s*\|\s*\ze%(\[No Name\]\s*)?.*$',
-    \           'marks'     : '\v^.{-}\|.{-}\|\s*',
-    \           'number'    : '.*|\s*\d\+\s*|\s\?',
-    \           'oldfiles'  : '.\{-}|\s*|\s*',
-    \           'registers' : '\v^\s*\|\s*\|\s*',
-    \         }[a:cmd]
+        \ 'args'      : '.*|\s*|\s*',
+        \ 'changes'   : 'location',
+        \ 'jumps'     : '^.\{-}\ze|',
+        \ 'ls'        : '.*|\s*|\s*\ze\%(\[No Name\]\s*\)\=.*$',
+        \ 'marks'     : '^.\{-}|.\{-}|\s*',
+        \ 'number'    : '.*|\s*\d\+\s*|\s\=',
+        \ 'oldfiles'  : '.\{-}|\s*|\s*',
+        \ 'registers' : '^\s*|\s*|\s*',
+        \ }[a:cmd]
 
     call qf#set_matches('interactive_lists:open_qf', 'Conceal', pat)
 
     if a:cmd is# 'registers'
-        call qf#set_matches('interactive_lists:open_qf', 'qfFileName',  '\v^\s*\|\s*\|\s\zs\S+')
+        call qf#set_matches('interactive_lists:open_qf', 'qfFileName',  '^\s*|\s*|\s\zs\S\+')
     endif
     call qf#create_matches()
 endfu
@@ -386,14 +380,14 @@ fu interactive_lists#set_or_go_to_mark(action) abort "{{{1
     "      rationale: the single quote key is easier to type
     "}}}
     if index(range(char2nr('A'), char2nr('Z')), char2nr(mark)) == -1
-        return feedkeys((a:action is# 'set' ? 'm' : "`").mark, 'in')
+        return feedkeys((a:action is# 'set' ? 'm' : "`")..mark, 'in')
     endif
 
     " now, we process a global mark
     " first, get the path to the file containing the bookmarks
-    let book_file = $HOME.'/.vim/bookmarks'
+    let book_file = $HOME..'/.vim/bookmarks'
     if !filereadable(book_file)
-        echo book_file.' is not readable'
+        echo book_file..' is not readable'
         return
     endif
 
@@ -402,9 +396,9 @@ fu interactive_lists#set_or_go_to_mark(action) abort "{{{1
         "                   ┌ eliminate old mark if it's present
         "                   │
         let new_bookmarks = filter(readfile(book_file), {_,v -> v[0] isnot# mark})
-        \ +                 [mark.':'.substitute(expand('%:p'), $HOME, '$HOME', '')]
-        " │
-        " └ and bookmark current file
+            \ + [mark..':'..substitute(expand('%:p'), $HOME, '$HOME', '')]
+            " │
+            " └ and bookmark current file
         call writefile(sort(new_bookmarks), book_file)
 
     " we JUMP to a global mark
@@ -414,7 +408,7 @@ fu interactive_lists#set_or_go_to_mark(action) abort "{{{1
             return
         endif
         let path = path[0][2:]
-        exe 'e '.path
+        exe 'e '..path
         " '. may not exist
         try
             sil! norm! g`.zvzz
@@ -425,5 +419,5 @@ fu interactive_lists#set_or_go_to_mark(action) abort "{{{1
         endtry
     endif
     " re-mark the file, to fix Vim's frequent and unavoidable lost marks
-    call feedkeys('m'.mark, 'in')
+    call feedkeys('m'..mark, 'in')
 endfu
