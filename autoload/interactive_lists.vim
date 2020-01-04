@@ -313,13 +313,13 @@ fu interactive_lists#main(cmd, bang) abort "{{{1
                \ :     'echoerr "No output"'
         endif
 
-        call setloclist(0, list)
-        call setloclist(0, [], 'a', {
-            \   'title': a:cmd is# 'marks'
-            \ ?     ':Marks'..(a:bang ? '!' : '')
-            \ : a:cmd is# 'number'
-            \ ?     ':'..cmdline
-            \ :     ':'..a:cmd..(a:bang ? '!' : '')})
+        call setloclist(0, [], ' ', {
+            \ 'items': list,
+            \ 'title': a:cmd is# 'marks'
+            \         ?     ':Marks'..(a:bang ? '!' : '')
+            \         : a:cmd is# 'number'
+            \         ?     ':'..cmdline
+            \         :     ':'..a:cmd..(a:bang ? '!' : '')})
 
         if a:cmd is# 'number'
             call timer_start(0, {_ -> s:open_qf('number') + feedkeys("\e", 'in')})
