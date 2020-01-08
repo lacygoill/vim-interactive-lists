@@ -396,7 +396,7 @@ fu interactive_lists#set_or_go_to_mark(action) abort "{{{1
         "                   ┌ eliminate old mark if it's present
         "                   │
         let new_bookmarks = filter(readfile(book_file), {_,v -> v[0] isnot# mark})
-            \ + [mark..':'..substitute(expand('%:p'), $HOME, '$HOME', '')]
+            \ + [mark..':'..substitute(expand('%:p'), '\V'..$HOME, '$HOME', '')]
             " │
             " └ and bookmark current file
         call writefile(sort(new_bookmarks), book_file)
