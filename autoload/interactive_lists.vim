@@ -300,7 +300,7 @@ fu interactive_lists#main(cmd, bang) abort "{{{1
         endif
         let output = s:capture(a:cmd)
         if a:cmd is# 'number' && get(output, 0, '') =~# '^Pattern not found:'
-            call timer_start(0, {_ -> feedkeys("\<cr>", 'in') })
+            call timer_start(0, {-> feedkeys("\<cr>", 'in') })
             return 'echoerr "Pattern not found"'
         endif
         let list = s:convert(output, a:cmd, a:bang ? 1 : 0)
@@ -322,7 +322,7 @@ fu interactive_lists#main(cmd, bang) abort "{{{1
             \         :     ':'..a:cmd..(a:bang ? '!' : '')})
 
         if a:cmd is# 'number'
-            call timer_start(0, {_ -> s:open_qf('number') + feedkeys("\e", 'in')})
+            call timer_start(0, {-> s:open_qf('number') + feedkeys("\e", 'in')})
         else
             call s:open_qf(a:cmd)
         endif
