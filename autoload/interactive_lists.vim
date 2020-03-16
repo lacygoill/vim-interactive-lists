@@ -66,7 +66,7 @@ fu interactive_lists#all_matches_in_buffer() abort "{{{1
             call qf#create_matches()
         endif
     catch
-        return lg#catch_error()
+        return lg#catch()
     finally
         call win_gotoid(id)
         call winrestview(view)
@@ -329,7 +329,7 @@ fu interactive_lists#main(cmd, bang) abort "{{{1
     catch
         return a:cmd is# 'number'
            \ ?     cmdline
-           \ :     lg#catch_error()
+           \ :     lg#catch()
     endtry
     return ''
 endfu
@@ -415,7 +415,7 @@ fu interactive_lists#set_or_go_to_mark(action) abort "{{{1
             "  │
             "  └ E20: mark not set
         catch
-            return lg#catch_error()
+            return lg#catch()
         endtry
     endif
     " re-mark the file, to fix Vim's frequent and unavoidable lost marks
