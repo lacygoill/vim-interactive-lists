@@ -215,18 +215,18 @@ fu s:convert(output, cmd, bang) abort "{{{1
             \ 'filename':  matchstr(v, '^\s*\S\+\%(\s\+\d\+\)\{2}\s\+\zs.*'),
             \ }})
 
-        "                             ┌ `remove()` returns the removed item,
-        "                             │ but `extend()` does NOT return the added item;
-        "                             │ instead returns the new extended dictionary
-        "                             │
-        let l:Local_mark  = { item -> extend(item, {
+        "                            ┌ `remove()` returns the removed item,
+        "                            │ but `extend()` does NOT return the added item;
+        "                            │ instead returns the new extended dictionary
+        "                            │
+        let l:Local_mark  = {item -> extend(item, {
             \ 'filename': expand('%:p'),
             \ 'text': item.mark_name..'    '..item.text
             \ })}
 
         call map(a:output, printf(
             \ '%s ? %s : %s',
-            \ 'v:val.mark_name !~# "^\\u$"',
+            \ 'v:val.mark_name !~# "^[A-Z0-9]$"',
             \ 'l:Local_mark(v:val)',
             \ '{}',
             \ ))
@@ -258,6 +258,9 @@ fu s:convert(output, cmd, bang) abort "{{{1
             \ 'filename': expand(matchstr(v, ':\zs.*')),
             \ }})
 
+        " TODO: Include global numbered marks (`'0`, ..., `'9`).
+        " Wait for the Vim PR #6032 to be merged; it provides `getmarklist()`.
+        " This will make the whole code much easier to write.
         return bookmarks
 
     elseif a:cmd is# 'number'
