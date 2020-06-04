@@ -1,3 +1,6 @@
+" TODO: Use `:h  quickfix-window-function` to get rid  of `qf#set_matches()` and
+" `qf#create_matches()`.
+
 fu interactive_lists#all_matches_in_buffer() abort "{{{1
     " Alternative:
     "
@@ -76,7 +79,7 @@ fu interactive_lists#all_matches_in_buffer() abort "{{{1
     endif
 endfu
 
-fu s:capture(cmd) abort "{{{1
+fu s:capture(cmd, bang) abort "{{{1
     if a:cmd is# 'args'
         let list = argv()
         call map(list, {_,v -> {
@@ -94,7 +97,12 @@ fu s:capture(cmd) abort "{{{1
         let list = range(1, bufnr('$'))
 
     elseif a:cmd is# 'marks'
-        let list = s:capture_cmd_local_to_window('marks', '^\s\+\S\+\%(\s\+\d\+\)\{2}')
+        if a:bang
+            let list = getmarklist(bufnr('%'))
+        else
+            " for global marks, we're only interested in the numbered ones
+            let list = filter(getmarklist(), {_,v -> v.mark =~# '''\d'})
+        endif
 
     elseif a:cmd is# 'number'
         let pos = getcurpos()
@@ -121,8 +129,8 @@ endfu
 fu s:capture_cmd_local_to_window(cmd, pat) abort "{{{1
     " The changelist is local to a window.
     " If we  are in a  location window,  `g:c` will show  us the changes  in the
-    " latter.   But, we  are NOT  interested in  them. We want  the ones  in the
-    " associated window. Same thing for the jumplist and the local marks.
+    " latter.  But, we  are *not* interested in  them.  We want the  ones in the
+    " associated window.  Same thing for the jumplist and the local marks.
     if a:cmd is# 'jumps'
         if &bt is# 'quickfix'
             noa call lg#window#qf_open_or_focus('loc')
@@ -157,16 +165,6 @@ fu s:capture_cmd_local_to_window(cmd, pat) abort "{{{1
         " what changed, and they're useless
         call filter(changelist, {_,v -> !empty(v.text)})
         return changelist
-
-    elseif a:cmd is# 'marks'
-        if &bt is# 'quickfix'
-            noa call lg#window#qf_open_or_focus('loc')
-            let list = split(execute(a:cmd), '\n')
-            noa wincmd p
-        else
-            let list = split(execute(a:cmd), '\n')
-        endif
-        return filter(list, {_,v -> v =~ a:pat})
     endif
 endfu
 
@@ -197,54 +195,24 @@ fu s:convert(output, cmd, bang) abort "{{{1
     elseif a:cmd is# 'changes'
 
     elseif a:cmd is# 'jumps'
-        " Why?
+        " Why?{{{
+        "
         " For some reason, `getjumplist()` seems to include in the list an item
         " matching the location: (buffer, line, col) = (1, 0, 0)
         " The issue may  come from the fact  that when we start Vim,  we have an
         " unnamed and empty buffer. Then, Vim restores a session automatically.
         " In the process, this buffer n°1 is probably wiped.
+        "}}}
         call filter(a:output, {_,v -> bufexists(v.bufnr)})
 
     " `:Marks!` → local marks only
     elseif a:cmd is# 'marks' && a:bang
         call map(a:output, {_,v -> {
-            \ 'mark_name': matchstr(v, '\S\+'),
-            \ 'lnum':      matchstr(v, '^\s*\S\+\s\+\zs\d\+'),
-            \ 'col':       matchstr(v, '^\s*\S\+\%(\s\+\zs\d\+\)\{2}'),
-            \ 'text':      matchstr(v, '^\s*\S\+\%(\s\+\d\+\)\{2}\s\+\zs.*'),
-            \ 'filename':  matchstr(v, '^\s*\S\+\%(\s\+\d\+\)\{2}\s\+\zs.*'),
+            \ 'bufnr': v.pos[0],
+            \ 'lnum' : v.pos[1],
+            \ 'col'  : v.pos[2],
+            \ 'text' : v.mark..'  '..getbufline(v.pos[0], v.pos[1])[0],
             \ }})
-
-        "                            ┌ `remove()` returns the removed item,
-        "                            │ but `extend()` does NOT return the added item;
-        "                            │ instead returns the new extended dictionary
-        "                            │
-        let l:Local_mark  = {item -> extend(item, {
-            \ 'filename': expand('%:p'),
-            \ 'text': item.mark_name..'    '..item.text
-            \ })}
-
-        call map(a:output, printf(
-            \ '%s ? %s : %s',
-            \ 'v:val.mark_name !~# "^[A-Z0-9]$"',
-            \ 'l:Local_mark(v:val)',
-            \ '{}',
-            \ ))
-
-        " remove possible empty dictionaries  which may have appeared after previous
-        " `map()` invocation
-        call filter(a:output, {_,v -> !empty(v)})
-
-        " When we iterate  over the dictionaries (`mark`)  stored in `a:output`,
-        " we have access to the original dictionaries, not copies.
-        " Otherwise,  removing  a  key  from   them  would  have  no  effect  on
-        " `a:output`.  But it does.
-        " This  is  because  Vim   passes  lists/dictionaries  to  functions  by
-        " reference, not by value.
-        for mark in a:output
-            " remove the `mark_name` key, it's not needed anymore
-            call remove(mark, 'mark_name')
-        endfor
 
     " `:Marks`  → global marks only
     elseif a:cmd is# 'marks' && !a:bang
@@ -258,9 +226,13 @@ fu s:convert(output, cmd, bang) abort "{{{1
             \ 'filename': expand(matchstr(v, ':\zs.*')),
             \ }})
 
-        " TODO: Include global numbered marks (`'0`, ..., `'9`).
-        " Wait for the Vim PR #6032 to be merged; it provides `getmarklist()`.
-        " This will make the whole code much easier to write.
+        call map(a:output, {_,v -> {
+            \ 'text': v.mark[1:1]..'  '..fnamemodify(v.file, ':t'),
+            \ 'filename': v.file,
+            \ 'lnum': v.pos[1],
+            \ 'col': v.pos[2],
+            \ }})
+        let bookmarks += a:output
         return bookmarks
 
     elseif a:cmd is# 'number'
@@ -277,10 +249,11 @@ fu s:convert(output, cmd, bang) abort "{{{1
             \ }})
 
     elseif a:cmd is# 'registers'
-        " Do NOT use the `filename` key to store the name of the registers.
-        " Why?
-        " After pressing `g:r`, Vim would load buffers "a", "b", …
+        " Do *not* use the `filename` key to store the name of the registers.{{{
+        "
+        " After pressing `g:r`, Vim would load buffers "a", "b", ...
         " They would pollute the buffer list (`:ls!`).
+        "}}}
         call map(a:output, {_,v -> {'text': v}})
 
         " We pass `1` as a 2nd argument to `getreg()`.
@@ -301,7 +274,10 @@ fu interactive_lists#main(cmd, bang) abort "{{{1
         if a:cmd is# 'number' && cmdline[-1:-1] isnot# '#'
             return cmdline
         endif
-        let output = s:capture(a:cmd)
+        if a:cmd is# 'marks' && has('nvim')
+            return 'echoerr "Requires getmarklist()"'
+        endif
+        let output = s:capture(a:cmd, a:bang)
         if a:cmd is# 'number' && get(output, 0, '') =~# '^Pattern not found:'
             call timer_start(0, {-> feedkeys("\<cr>", 'in') })
             return 'echoerr "Pattern not found"'
@@ -370,9 +346,7 @@ endfu
 fu interactive_lists#set_or_go_to_mark(action) abort "{{{1
     " ask for a mark
     let mark = nr2char(getchar(),1)
-    if mark is# "\e"
-        return
-    endif
+    if mark is# "\e" | return | endif
 
     " If it's not a global one, just type the keys as usual (with one difference):{{{
     "
@@ -394,7 +368,7 @@ fu interactive_lists#set_or_go_to_mark(action) abort "{{{1
         return
     endif
 
-    " we SET a global mark
+    " we *set* a global mark
     if a:action is# 'set'
         "                   ┌ eliminate old mark if it's present
         "                   │
@@ -404,7 +378,7 @@ fu interactive_lists#set_or_go_to_mark(action) abort "{{{1
             " └ and bookmark current file
         call writefile(sort(new_bookmarks), book_file)
 
-    " we JUMP to a global mark
+    " we *jump* to a global mark
     else
         let path = filter(readfile(book_file), {_,v -> v[0] is# mark})
         if empty(path)
