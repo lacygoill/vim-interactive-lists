@@ -274,9 +274,6 @@ fu interactive_lists#main(cmd, bang) abort "{{{1
         if a:cmd is# 'number' && cmdline[-1:-1] isnot# '#'
             return cmdline
         endif
-        if a:cmd is# 'marks' && has('nvim')
-            return 'echoerr "Requires getmarklist()"'
-        endif
         let output = s:capture(a:cmd, a:bang)
         if a:cmd is# 'number' && get(output, 0, '') =~# '^Pattern not found:'
             call timer_start(0, {-> feedkeys("\<cr>", 'in') })
