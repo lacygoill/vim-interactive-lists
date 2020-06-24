@@ -33,7 +33,7 @@ fu interactive_lists#all_matches_in_buffer() abort "{{{1
         "
         "     cd
         "     title = ':    lvim /./ %'~
-        "               ^^^^
+        "               ^--^
         "               ✘ because `:lvim` is executed from a line~
         "                 with a level of indentation of 4 spaces~
         "
@@ -47,7 +47,7 @@ fu interactive_lists#all_matches_in_buffer() abort "{{{1
         "
         "     cd
         "     title = ':        lvim /./ %'~
-        "               ^^^^^^^^
+        "               ^------^
         "                ✘ because `:lvim` is executed from a line~
         "                  with a level of indentation of 8 spaces~
         "}}}
