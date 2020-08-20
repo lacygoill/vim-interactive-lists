@@ -2,6 +2,7 @@
 " `qf#create_matches()`.
 
 import Catch from 'lg.vim'
+import QfOpenOrFocus from 'lg/window.vim'
 
 fu interactive_lists#all_matches_in_buffer() abort "{{{1
     " Alternative:
@@ -16,7 +17,7 @@ fu interactive_lists#all_matches_in_buffer() abort "{{{1
         " It removes excessive spaces in the title of the qf window, between the
         " colon and the rest of the command.
         "}}}
-        " Why is it necessary?{{{
+        "   Why is it necessary?{{{
         "
         " Because Vim copies the indentation of the command.
         "
@@ -53,7 +54,7 @@ fu interactive_lists#all_matches_in_buffer() abort "{{{1
         "                ✘ because `:lvim` is executed from a line~
         "                  with a level of indentation of 8 spaces~
         "}}}
-        " Is there an alternative?{{{
+        "   Is there an alternative?{{{
         "
         " Yes, but it's more complicated:
         "
@@ -67,8 +68,8 @@ fu interactive_lists#all_matches_in_buffer() abort "{{{1
         "                  stay in the qf window
         lwindow
         if &bt is# 'quickfix'
-            call qf#set_matches('vimrc:all_matches_in_buffer', 'Conceal', 'location')
-            call qf#create_matches()
+            sil! call qf#set_matches('vimrc:all_matches_in_buffer', 'Conceal', 'location')
+            sil! call qf#create_matches()
         endif
     catch
         return s:Catch()
@@ -135,7 +136,7 @@ fu s:capture_cmd_local_to_window(cmd, pat) abort "{{{1
     " associated window.  Same thing for the jumplist and the local marks.
     if a:cmd is# 'jumps'
         if &bt is# 'quickfix'
-            noa call lg#window#qf_open_or_focus('loc')
+            noa call s:QfOpenOrFocus('loc')
             let jumplist = getjumplist()->get(0, [])
             call map(jumplist, {_, v -> extend(v,
                 \ {'text': bufnr('%') == v.bufnr ? getline(v.lnum) : bufname(v.bufnr)})})
@@ -149,7 +150,7 @@ fu s:capture_cmd_local_to_window(cmd, pat) abort "{{{1
 
     elseif a:cmd is# 'changes'
         if &bt is# 'quickfix'
-            noa call lg#window#qf_open_or_focus('loc')
+            noa call s:QfOpenOrFocus('loc')
             let changelist = getchangelist('%')->get(0, [])
             let bufnr = bufnr('%')
             for entry in changelist
@@ -335,12 +336,12 @@ fu s:open_qf(cmd) abort "{{{1
         \ 'registers': '^\s*|\s*|\s*',
         \ }[a:cmd]
 
-    call qf#set_matches('interactive_lists:open_qf', 'Conceal', pat)
+    sil! call qf#set_matches('interactive_lists:open_qf', 'Conceal', pat)
 
     if a:cmd is# 'registers'
-        call qf#set_matches('interactive_lists:open_qf', 'qfFileName', '^\s*|\s*|\s\zs\S\+')
+        sil! call qf#set_matches('interactive_lists:open_qf', 'qfFileName', '^\s*|\s*|\s\zs\S\+')
     endif
-    call qf#create_matches()
+    sil! call qf#create_matches()
 endfu
 
 fu interactive_lists#set_or_go_to_mark(action) abort "{{{1
