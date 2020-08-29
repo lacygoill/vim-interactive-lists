@@ -382,7 +382,7 @@ fu interactive_lists#set_or_go_to_mark(action) abort "{{{1
     " we *jump* to a global mark
     else
         let path = readfile(book_file)->filter({_, v -> v[0] is# mark})
-        if empty(path)
+        if path == [] || path[0][2:] == ''
             return
         endif
         let path = path[0][2:]
