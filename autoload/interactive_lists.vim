@@ -22,25 +22,26 @@ fu interactive_lists#all_matches_in_buffer() abort "{{{1
         " Because Vim copies the indentation of the command.
         "
         " MWE:
-        "     nno cd :lvim /./ % <bar> lopen<cr>
         "
-        "     cd
+        "     :nno cd <cmd>lvim /./ % <bar> lopen<cr>
+        "
+        "     " press:  cd
         "     :lopen
         "     title = ':lvim /./ %'    ✔~
         "
-        "     nno cd :call Func()<cr>
+        "     nno cd <cmd>call Func()<cr>
         "     fu Func() abort
         "         lvim /./ %
         "         lopen
         "     endfu
         "
-        "     cd
+        "     " press:  cd
         "     title = ':    lvim /./ %'~
         "               ^--^
         "               ✘ because `:lvim` is executed from a line~
         "                 with a level of indentation of 4 spaces~
         "
-        "     nno cd :call Func()<cr>
+        "     nno cd <cmd>call Func()<cr>
         "     fu Func() abort
         "         try
         "             lvim /./ %
@@ -48,7 +49,7 @@ fu interactive_lists#all_matches_in_buffer() abort "{{{1
         "         endtry
         "     endfu
         "
-        "     cd
+        "     " press:  cd
         "     title = ':        lvim /./ %'~
         "               ^------^
         "                ✘ because `:lvim` is executed from a line~
@@ -272,7 +273,7 @@ fu s:convert(output, cmd, bang) abort "{{{1
     return a:output
 endfu
 
-fu interactive_lists#main(cmd, bang) abort "{{{1
+fu interactive_lists#main(cmd, bang = v:false) abort "{{{1
     try
         let cmdline = getcmdline()
         if a:cmd is# 'number' && cmdline[-1:-1] isnot# '#'

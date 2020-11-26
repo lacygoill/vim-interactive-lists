@@ -22,19 +22,19 @@ let g:loaded_interactive_lists = 1
 "                                   `:ilist` doesn't add anchors (\<, \>)
 "                                   contrary to the default `:ilist`
 "}}}
-nno <silent><unique> g:: :<c-u>call interactive_lists#all_matches_in_buffer()<cr>
+nno <unique> g:: <cmd>call interactive_lists#all_matches_in_buffer()<cr>
 
-nno <silent><unique> g:a :<c-u>exe interactive_lists#main('args', 0)<cr>
-nno <silent><unique> g:c :<c-u>exe interactive_lists#main('changes', 0)<cr>
-nno <silent><unique> g:j :<c-u>exe interactive_lists#main('jumps', 0)<cr>
-nno <silent><unique> g:l :<c-u>exe interactive_lists#main('ls', 0)<cr>
-nno <silent><unique> g:L :<c-u>exe interactive_lists#main('ls', 1)<cr>
-nno <silent><unique> g:m :<c-u>exe interactive_lists#main('marks', 0)<cr>
-nno <silent><unique> g:M :<c-u>exe interactive_lists#main('marks', 1)<cr>
-nno <silent><unique> g:o :<c-u>exe interactive_lists#main('oldfiles', 0)<cr>
-nno <silent><unique> g:r :<c-u>exe interactive_lists#main('registers', 0)<cr>
+nno <unique> g:a <cmd>exe interactive_lists#main('args')<cr>
+nno <unique> g:c <cmd>exe interactive_lists#main('changes')<cr>
+nno <unique> g:j <cmd>exe interactive_lists#main('jumps')<cr>
+nno <unique> g:l <cmd>exe interactive_lists#main('ls')<cr>
+nno <unique> g:L <cmd>exe interactive_lists#main('ls', v:true)<cr>
+nno <unique> g:m <cmd>exe interactive_lists#main('marks')<cr>
+nno <unique> g:M <cmd>exe interactive_lists#main('marks', v:true)<cr>
+nno <unique> g:o <cmd>exe interactive_lists#main('oldfiles')<cr>
+nno <unique> g:r <cmd>exe interactive_lists#main('registers')<cr>
 
-cno <unique> <c-\>n <c-\>e interactive_lists#main('number', 0)<cr>
+cno <unique> <c-\>n <c-\>e interactive_lists#main('number')<cr>
 
 " Why?{{{
 "
@@ -66,5 +66,5 @@ cno <unique> <c-\>n <c-\>e interactive_lists#main('number', 0)<cr>
 " Don't rely on the existing mechanism, it's fucked up beyond any repair.
 " Don't even rely on `~/.viminfo`.  It's another can of worms.
 "}}}
-nno <silent><unique> m :<c-u>call interactive_lists#set_or_go_to_mark('set')<cr>
-nno <silent><unique> ' :<c-u>call interactive_lists#set_or_go_to_mark('go')<cr>
+nno <unique> m <cmd>call interactive_lists#set_or_go_to_mark('set')<cr>
+nno <unique> ' <cmd>call interactive_lists#set_or_go_to_mark('go')<cr>
