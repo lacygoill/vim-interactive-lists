@@ -232,7 +232,7 @@ fu s:convert(output, cmd, bang) abort "{{{1
             \ }})
 
         call map(a:output, {_, v -> {
-            \ 'text': v.mark[1:1] .. '  ' .. fnamemodify(v.file, ':t'),
+            \ 'text': v.mark[1 : 1] .. '  ' .. fnamemodify(v.file, ':t'),
             \ 'filename': v.file,
             \ 'lnum': v.pos[1],
             \ 'col': v.pos[2],
@@ -276,7 +276,7 @@ endfu
 fu interactive_lists#main(cmd, bang = v:false) abort "{{{1
     try
         let cmdline = getcmdline()
-        if a:cmd is# 'number' && cmdline[-1:-1] isnot# '#'
+        if a:cmd is# 'number' && cmdline[-1 : -1] isnot# '#'
             return cmdline
         endif
         let output = s:capture(a:cmd, a:bang)
@@ -383,10 +383,10 @@ fu interactive_lists#set_or_go_to_mark(action) abort "{{{1
     " we *jump* to a global mark
     else
         let path = readfile(book_file)->filter({_, v -> v[0] is# mark})
-        if path == [] || path[0][2:] == ''
+        if path == [] || path[0][2 :] == ''
             return
         endif
-        let path = path[0][2:]
+        let path = path[0][2 :]
         exe 'e ' .. path
         " '. may not exist
         try
