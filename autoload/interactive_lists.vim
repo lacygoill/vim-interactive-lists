@@ -33,7 +33,7 @@ def interactive_lists#main(cmd: string, bang = false): string #{{{2
         endif
 
         setloclist(0, [], ' ', {
-            items: list->map((_, v) =>
+            items: list->mapnew((_, v) =>
                 has_key(v, 'lnum')
                     ? extend(v, {lnum: v.lnum->str2nr()})
                     : v
@@ -226,9 +226,7 @@ def Capture(cmd: string, bang: bool): list<any> #{{{2
 
     elseif cmd == 'number'
         var pos: list<number> = getcurpos()
-        # Needs a legacy function, because of a Vim bug:
-        # https://github.com/vim/vim/issues/7699
-        list = Execute('keepj ' .. getcmdline())->split('\n')
+        list = execute('keepj ' .. getcmdline()->substitute('#$', 'number', ''))->split('\n')
         setpos('.', pos)
 
     elseif cmd == 'oldfiles'
@@ -247,10 +245,6 @@ def Capture(cmd: string, bang: bool): list<any> #{{{2
     endif
     return list
 enddef
-
-fu Execute(cmd) abort
-    return execute(a:cmd, '')
-endfu
 
 def CaptureCmdLocalToWindow(cmd: string, pat: string): list<any> #{{{2
     # The changelist is local to a window.
