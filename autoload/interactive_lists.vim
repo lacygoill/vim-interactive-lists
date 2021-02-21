@@ -20,22 +20,26 @@ def interactive_lists#main(cmd: string, bang = false): string #{{{2
         var output: list<any> = Capture(cmd, bang)
         if cmd == 'number' && get(output, 0, '') =~ '^Pattern not found:'
             timer_start(0, () => feedkeys("\<cr>", 'in') )
-            return 'echoerr "Pattern not found"'
+            Error('Pattern not found')
         endif
         var list: list<any> = Convert(output, cmd, bang)
 
         if empty(list)
-            return cmd == 'args'
-                ?     'echoerr "No arguments"'
-                : cmd == 'number'
-                ?     cmdline
-                :     'echoerr "No output"'
+            if cmd == 'args'
+                Error('No arguments')
+                return ''
+            elseif cmd == 'number'
+                return cmdline
+            else
+                Error('No output')
+                return ''
+            endif
         endif
 
         setloclist(0, [], ' ', {
-            items: list->mapnew((_, v) =>
+            items: list->mapnew((_, v: any): dict<any> =>
                 has_key(v, 'lnum')
-                    ? extend(v, {lnum: v.lnum->str2nr()})
+                    ? extend(v, {lnum: v.lnum})
                     : v
                 ),
             title: cmd == 'marks'
@@ -56,6 +60,12 @@ def interactive_lists#main(cmd: string, bang = false): string #{{{2
             :     Catch()
     endtry
     return ''
+enddef
+
+def Error(msg: string)
+    echohl ErrorMsg
+    echom msg
+    echohl NONE
 enddef
 
 def interactive_lists#allMatchesInBuffer() #{{{2
@@ -170,14 +180,15 @@ def interactive_lists#setOrGoToMark(action: string) #{{{2
     if action == 'set'
         var new_bookmarks: list<string> = readfile(book_file)
             # eliminate old mark if it's present
-            ->filter((_, v) => v[0] != mark)
+            ->filter((_, v: string): bool => v[0] != mark)
             # and bookmark current file
             + [mark .. ':' .. expand('%:p')->substitute('\V' .. $HOME, '$HOME', '')]
         sort(new_bookmarks)->writefile(book_file)
 
     # we *jump* to a global mark
     else
-        var lpath: list<string> = readfile(book_file)->filter((_, v) => v[0] == mark)
+        var lpath: list<string> = readfile(book_file)
+            ->filter((_, v: string): bool => v[0] == mark)
         if lpath == [] || lpath[0][2 :] == ''
             return
         endif
@@ -202,7 +213,7 @@ def Capture(cmd: string, bang: bool): list<any> #{{{2
     var list: list<any>
     if cmd == 'args'
         list = argv()
-            ->mapnew((_, v) => ({
+            ->mapnew((_, v: string): dict<string> => ({
                 filename: v,
                 text: fnamemodify(v, ':t'),
                 }))
@@ -215,13 +226,18 @@ def Capture(cmd: string, bang: bool): list<any> #{{{2
 
     elseif cmd == 'ls'
         list = range(1, bufnr('$'))
+            ->filter(bang
+                ? (_, v: number): bool => bufexists(v)
+                : (_, v: number): bool => buflisted(v)
+                )
 
     elseif cmd == 'marks'
         if bang
             list = bufnr('%')->getmarklist()
         else
             # for global marks, we're only interested in the numbered ones
-            list = getmarklist()->filter((_, v) => v.mark =~ '''\d')
+            list = getmarklist()
+                ->filter((_, v: dict<any>): bool => v.mark =~ '''\d')
         endif
 
     elseif cmd == 'number'
@@ -241,28 +257,35 @@ def Capture(cmd: string, bang: bool): list<any> #{{{2
             /
             =
         END
-        extend(list, (range(48, 57) + range(97, 122))->mapnew((_, v) => nr2char(v)))
+        extend(list, (range(48, 57) + range(97, 122))
+            ->mapnew((_, v: number): string => nr2char(v))
+            )
     endif
     return list
 enddef
 
 def CaptureCmdLocalToWindow(cmd: string, pat: string): list<any> #{{{2
-    # The changelist is local to a window.
-    # If we  are in a  location window,  `g:c` will show  us the changes  in the
-    # latter.  But, we  are *not* interested in  them.  We want the  ones in the
-    # associated window.  Same thing for the jumplist and the local marks.
+# The changelist is local to a window.
+# If we are in a location window, `g:c`  will show us the changes in the latter.
+# But, we  are *not*  interested in them.   We want the  ones in  the associated
+# window.  Same thing for the jumplist and the local marks.
+
     if cmd == 'jumps'
         var jumplist: list<any>
         if &bt == 'quickfix'
             noa QfOpenOrFocus('loc')
-            jumplist = getjumplist()->get(0, [])
-            map(jumplist, (_, v) => extend(v,
-                {text: bufnr('%') == v.bufnr ? getline(v.lnum) : bufname(v.bufnr)}))
+            jumplist = getjumplist()
+                ->get(0, [])
+                ->mapnew((_, v: dict<number>): dict<any> =>
+                    extendnew(v, {text: bufnr('%') == v.bufnr
+                        ? getline(v.lnum)
+                        : bufname(v.bufnr)
+                        }))
             noa wincmd p
             return jumplist
         else
             jumplist = getjumplist()->get(0, [])
-            return mapnew(jumplist, (_, v) => extend(v,
+            return mapnew(jumplist, (_, v: dict<number>): dict<any> => extendnew(v,
                 {text: bufnr('%') == v.bufnr ? getline(v.lnum) : bufname(v.bufnr)}))
         endif
 
@@ -272,20 +295,45 @@ def CaptureCmdLocalToWindow(cmd: string, pat: string): list<any> #{{{2
             noa QfOpenOrFocus('loc')
             changelist = getchangelist('%')->get(0, [])
             var bufnr: number = bufnr('%')
-            for entry in changelist
-                extend(entry, {text: getline(entry.lnum), bufnr: bufnr})
+            for i in changelist->len()->range()
+                changelist[i] = extendnew(changelist[i], {
+                    text: getline(changelist[i]['lnum']),
+                    bufnr: bufnr,
+                    })
             endfor
             noa wincmd p
         else
             changelist = getchangelist('%')->get(0, [])
             var bufnr: number = bufnr('%')
-            for entry in changelist
-                extend(entry, {text: getline(entry.lnum), bufnr: bufnr})
+            for i in changelist->len()->range()
+                # Do *not* try to replace `changelist[i]` with a variable name.{{{
+                #
+                # You could  be tempted to  use it everywhere, including  in the
+                # lhs of the assignment:
+                #
+                #     var item: dict<number> = changelist[i]
+                #     item = extendnew(item, {
+                #         text: getline(item.lnum),
+                #         bufnr: bufnr,
+                #         })
+                #
+                # That's wrong:
+                #                      this is a reference to an item in the changelist (good)
+                #                      v--v
+                #     item = extendnew(item, {
+                #     ^--^
+                #     this is NOT a reference to an item in the changelist (bad);
+                #     it's just a variable name
+                #}}}
+                changelist[i] = extendnew(changelist[i], {
+                    text: getline(changelist[i]['lnum']),
+                    bufnr: bufnr,
+                    })
             endfor
         endif
         # all entries should show some text, otherwise it's impossible to know
         # what changed, and they're useless
-        filter(changelist, (_, v) => !empty(v.text))
+        filter(changelist, (_, v: dict<any>): bool => !empty(v.text))
         return changelist
     endif
     return []
@@ -297,7 +345,10 @@ def Convert(arg_output: list<any>, cmd: string, bang: bool): list<any> #{{{2
         output = arg_output
 
     elseif cmd == 'ls'
-        filter(output, bang ? (_, v) => bufexists(v) : (_, v) => buflisted(v))
+        filter(output, bang
+            ? (_, v: string): bool => bufexists(v)
+            : (_, v: string): bool => buflisted(v)
+            )
         # Why is the first character in `printf()` a no-break space?{{{
         #
         # Because, by default,  Vim reduces all leading spaces in  the text to a
@@ -306,7 +357,7 @@ def Convert(arg_output: list<any>, cmd: string, bang: bool): list<any> #{{{2
         # prefix the text with a character  which is not a whitespace, but looks
         # like one.
         #}}}
-        output = arg_output->mapnew((_, v) => ({
+        output = arg_output->mapnew((_, v: number): dict<any> => ({
             bufnr: v,
             text: printf(' %*d%s%s%s%s%s %s',
                             bufnr('$')->len(), v,
@@ -329,16 +380,18 @@ def Convert(arg_output: list<any>, cmd: string, bang: bool): list<any> #{{{2
         # unnamed and empty buffer.  Then, Vim restores a session automatically.
         # In the process, this buffer n°1 is probably wiped.
         #}}}
-        output = arg_output->filter((_, v) => bufexists(v.bufnr))
+        output = arg_output
+            ->filter((_, v: dict<any>): bool => bufexists(v.bufnr))
 
     # `:Marks!` → local marks only
     elseif cmd == 'marks' && bang
-        output = arg_output->map((_, v) => ({
-            bufnr: v.pos[0],
-            lnum: v.pos[1],
-            col: v.pos[2],
-            text: v.mark .. '  ' .. getbufline(v.pos[0], v.pos[1])[0],
-            }))
+        output = arg_output
+            ->map((_, v: dict<any>): dict<any> => ({
+                bufnr: v.pos[0],
+                lnum: v.pos[1],
+                col: v.pos[2],
+                text: v.mark .. '  ' .. getbufline(v.pos[0], v.pos[1])[0],
+                }))
 
     # `:Marks`  → global marks only
     elseif cmd == 'marks' && !bang
@@ -348,32 +401,35 @@ def Convert(arg_output: list<any>, cmd: string, bang: bool): list<any> #{{{2
         var bookmarks: list<string> = readfile($HOME .. '/.vim/bookmarks')
 
         var enriched_bookmarks: list<dict<any>> =
-            bookmarks->mapnew((_, v) => ({
+            bookmarks->mapnew((_, v: string): dict<string> => ({
                 text: v[0] .. '  ' .. matchstr(v, ':\zs.*')->fnamemodify(':t'),
                 filename: matchstr(v, ':\zs.*')->expand(),
                 }))
 
-        output = arg_output->map((_, v) => ({
-            text: v.mark[1 : 1] .. '  ' .. fnamemodify(v.file, ':t'),
-            filename: v.file,
-            lnum: v.pos[1],
-            col: v.pos[2],
-            }))
+        output = arg_output
+            ->map((_, v: dict<any>): dict<any> => ({
+                text: v.mark[1 : 1] .. '  ' .. fnamemodify(v.file, ':t'),
+                filename: v.file,
+                lnum: v.pos[1],
+                col: v.pos[2],
+                }))
         enriched_bookmarks += output
         return enriched_bookmarks
 
     elseif cmd == 'number'
-        output = arg_output->mapnew((_, v) => ({
-            filename: expand('%:p'),
-            lnum: matchstr(v, '^\s*\zs\d\+'),
-            text: matchstr(v, '^\s*\d\+\s\zs.*'),
-            }))
+        output = arg_output
+            ->mapnew((_, v: string): dict<any> => ({
+                filename: expand('%:p'),
+                lnum: matchstr(v, '^\s*\zs\d\+')->str2nr(),
+                text: matchstr(v, '^\s*\d\+\s\zs.*'),
+                }))
 
     elseif cmd == 'oldfiles'
-        output = arg_output->mapnew((_, v) => ({
-            filename: matchstr(v, '^\d\+:\s\zs.*')->expand(),
-            text: matchstr(v, '^\d\+:\s\zs.*')->fnamemodify(':t'),
-            }))
+        output = arg_output
+            ->mapnew((_, v: string): dict<string> => ({
+                filename: matchstr(v, '^\d\+:\s\zs.*')->expand(),
+                text: matchstr(v, '^\d\+:\s\zs.*')->fnamemodify(':t'),
+                }))
 
     elseif cmd == 'registers'
         # Do *not* use the `filename` key to store the name of the registers.{{{
@@ -381,15 +437,17 @@ def Convert(arg_output: list<any>, cmd: string, bang: bool): list<any> #{{{2
         # After pressing `g:r`, Vim would load buffers "a", "b", ...
         # They would pollute the buffer list (`:ls!`).
         #}}}
-        output = arg_output->mapnew((_, v) => ({text: v}))
+        output = arg_output
+            ->mapnew((_, v: string): dict<string> => ({text: v}))
 
         # We pass `1` as a 2nd argument to `getreg()`.
         # It's ignored  for most registers,  but useful for the  expression register.
         # It allows to get the expression  itself, not its current value which could
         # not exist anymore (ex: arg)
-        map(output, (_, v) => extend(v, {
-            text: v.text .. '    ' .. getreg(v.text, true)
-            }))
+        map(output, (_, v: dict<string>): dict<string> =>
+            extend(v, {
+                text: v.text .. '    ' .. getreg(v.text, true)
+                }))
 
     endif
     return output

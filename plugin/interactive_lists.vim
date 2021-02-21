@@ -25,15 +25,15 @@ var loaded = true
 #}}}
 nno <unique> g:: <cmd>call interactive_lists#allMatchesInBuffer()<cr>
 
-nno <unique> g:a <cmd>exe interactive_lists#main('args')<cr>
-nno <unique> g:c <cmd>exe interactive_lists#main('changes')<cr>
-nno <unique> g:j <cmd>exe interactive_lists#main('jumps')<cr>
-nno <unique> g:l <cmd>exe interactive_lists#main('ls')<cr>
-nno <unique> g:L <cmd>exe interactive_lists#main('ls', v:true)<cr>
-nno <unique> g:m <cmd>exe interactive_lists#main('marks')<cr>
-nno <unique> g:M <cmd>exe interactive_lists#main('marks', v:true)<cr>
-nno <unique> g:o <cmd>exe interactive_lists#main('oldfiles')<cr>
-nno <unique> g:r <cmd>exe interactive_lists#main('registers')<cr>
+nno <unique> g:a <cmd>call interactive_lists#main('args')<cr>
+nno <unique> g:c <cmd>call interactive_lists#main('changes')<cr>
+nno <unique> g:j <cmd>call interactive_lists#main('jumps')<cr>
+nno <unique> g:l <cmd>call interactive_lists#main('ls')<cr>
+nno <unique> g:L <cmd>call interactive_lists#main('ls', v:true)<cr>
+nno <unique> g:m <cmd>call interactive_lists#main('marks')<cr>
+nno <unique> g:M <cmd>call interactive_lists#main('marks', v:true)<cr>
+nno <unique> g:o <cmd>call interactive_lists#main('oldfiles')<cr>
+nno <unique> g:r <cmd>call interactive_lists#main('registers')<cr>
 
 cno <unique> <c-\>n <c-\>e interactive_lists#main('number')<cr>
 
