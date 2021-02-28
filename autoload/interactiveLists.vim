@@ -10,7 +10,7 @@ import Catch from 'lg.vim'
 import QfOpenOrFocus from 'lg/window.vim'
 
 # Interface {{{1
-def interactive_lists#main(cmd: string, bang = false): string #{{{2
+def interactiveLists#main(cmd: string, bang = false): string #{{{2
     var cmdline: string
     try
         cmdline = getcmdline()
@@ -68,7 +68,7 @@ def Error(msg: string)
     echohl NONE
 enddef
 
-def interactive_lists#allMatchesInBuffer() #{{{2
+def interactiveLists#allmatchesinbuffer() #{{{2
     # Alternative:
     #
     #     keepj g//#
@@ -148,7 +148,7 @@ def interactive_lists#allMatchesInBuffer() #{{{2
     endif
 enddef
 
-def interactive_lists#setOrGoToMark(action: string) #{{{2
+def interactiveLists#setorgotomark(action: string) #{{{2
     # ask for a mark
     var mark: string = getchar()->nr2char(1)
     if mark == "\e"

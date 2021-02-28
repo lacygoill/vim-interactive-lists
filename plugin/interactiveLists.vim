@@ -23,19 +23,19 @@ var loaded = true
 #                       `:ilist` doesn't add anchors (\<, \>)
 #                       contrary to the default `:ilist`
 #}}}
-nno <unique> g:: <cmd>call interactive_lists#allMatchesInBuffer()<cr>
+nno <unique> g:: <cmd>call interactiveLists#allmatchesinbuffer()<cr>
 
-nno <unique> g:a <cmd>call interactive_lists#main('args')<cr>
-nno <unique> g:c <cmd>call interactive_lists#main('changes')<cr>
-nno <unique> g:j <cmd>call interactive_lists#main('jumps')<cr>
-nno <unique> g:l <cmd>call interactive_lists#main('ls')<cr>
-nno <unique> g:L <cmd>call interactive_lists#main('ls', v:true)<cr>
-nno <unique> g:m <cmd>call interactive_lists#main('marks')<cr>
-nno <unique> g:M <cmd>call interactive_lists#main('marks', v:true)<cr>
-nno <unique> g:o <cmd>call interactive_lists#main('oldfiles')<cr>
-nno <unique> g:r <cmd>call interactive_lists#main('registers')<cr>
+nno <unique> g:a <cmd>call interactiveLists#main('args')<cr>
+nno <unique> g:c <cmd>call interactiveLists#main('changes')<cr>
+nno <unique> g:j <cmd>call interactiveLists#main('jumps')<cr>
+nno <unique> g:l <cmd>call interactiveLists#main('ls')<cr>
+nno <unique> g:L <cmd>call interactiveLists#main('ls', v:true)<cr>
+nno <unique> g:m <cmd>call interactiveLists#main('marks')<cr>
+nno <unique> g:M <cmd>call interactiveLists#main('marks', v:true)<cr>
+nno <unique> g:o <cmd>call interactiveLists#main('oldfiles')<cr>
+nno <unique> g:r <cmd>call interactiveLists#main('registers')<cr>
 
-cno <unique> <c-\>n <c-\>e interactive_lists#main('number')<cr>
+cno <unique> <c-\>n <c-\>e interactiveLists#main('number')<cr>
 
 # Why?{{{
 #
@@ -67,5 +67,5 @@ cno <unique> <c-\>n <c-\>e interactive_lists#main('number')<cr>
 # Don't rely on the existing mechanism, it's fucked up beyond any repair.
 # Don't even rely on `~/.viminfo`.  It's another can of worms.
 #}}}
-nno <unique> m <cmd>call interactive_lists#setOrGoToMark('set')<cr>
-nno <unique> ' <cmd>call interactive_lists#setOrGoToMark('go')<cr>
+nno <unique> m <cmd>call interactiveLists#setorgotomark('set')<cr>
+nno <unique> ' <cmd>call interactiveLists#setorgotomark('go')<cr>
