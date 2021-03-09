@@ -414,7 +414,7 @@ def Convert(arg_output: list<any>, cmd: string, bang: bool): list<any> #{{{2
 
         output = arg_output
             ->map((_, v: dict<any>): dict<any> => ({
-                    text: v.mark[1 : 1] .. '  ' .. fnamemodify(v.file, ':t'),
+                    text: v.mark[1] .. '  ' .. fnamemodify(v.file, ':t'),
                     filename: v.file,
                     lnum: v.pos[1],
                     col: v.pos[2],
