@@ -39,7 +39,7 @@ def interactiveLists#main(cmd: string, bang = false): string #{{{2
         setloclist(0, [], ' ', {
             items: list
                     ->mapnew((_, v: any): dict<any> =>
-                                has_key(v, 'lnum')
+                                v->has_key('lnum')
                                     ? extend(v, {lnum: v.lnum})
                                     : v
                     ),
