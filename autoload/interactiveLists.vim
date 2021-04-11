@@ -19,7 +19,7 @@ def interactiveLists#main(cmd: string, bang = false): string #{{{2
         endif
         var output: list<any> = Capture(cmd, bang)
         if cmd == 'number' && get(output, 0, '') =~ '^Pattern not found:'
-            timer_start(0, () => feedkeys("\<cr>", 'in'))
+            timer_start(0, (_) => feedkeys("\<cr>", 'in'))
             Error('Pattern not found')
         endif
         var list: list<any> = Convert(output, cmd, bang)
@@ -51,7 +51,10 @@ def interactiveLists#main(cmd: string, bang = false): string #{{{2
         })
 
         if cmd == 'number'
-            timer_start(0, () => [OpenQf('number'), feedkeys("\e", 'in')])
+            timer_start(0, (_) => {
+                OpenQf('number')
+                feedkeys("\e", 'in')
+            })
         else
             OpenQf(cmd)
         endif
@@ -150,8 +153,12 @@ def interactiveLists#allmatchesinbuffer() #{{{2
 enddef
 
 def interactiveLists#setorgotomark(action: string) #{{{2
+    var c: any = getchar()
+    if typename(c) != 'number'
+        return
+    endif
     # ask for a mark
-    var mark: string = getchar()->nr2char(1)
+    var mark: string = nr2char(c)
     if mark == "\e"
         return
     endif
@@ -222,7 +229,7 @@ def Capture(cmd: string, bang: bool): list<any> #{{{2
             ->mapnew((_, v: string): dict<string> => ({
                 filename: v,
                 text: fnamemodify(v, ':t'),
-                }))
+            }))
 
     elseif cmd == 'changes'
         list = CaptureCmdLocalToWindow('changes', '^\%(\s\+\d\+\)\{3}')
@@ -309,7 +316,7 @@ def CaptureCmdLocalToWindow(cmd: string, pat: string): list<any> #{{{2
                 changelist[i] = extendnew(changelist[i], {
                     text: getline(changelist[i]['lnum']),
                     bufnr: bufnr,
-                    })
+                })
             endfor
             noa wincmd p
         else
@@ -338,7 +345,7 @@ def CaptureCmdLocalToWindow(cmd: string, pat: string): list<any> #{{{2
                 changelist[i] = extendnew(changelist[i], {
                     text: getline(changelist[i]['lnum']),
                     bufnr: bufnr,
-                    })
+                })
             endfor
         endif
         # all entries should show some text, otherwise it's impossible to know
@@ -348,7 +355,12 @@ def CaptureCmdLocalToWindow(cmd: string, pat: string): list<any> #{{{2
     return []
 enddef
 
-def Convert(arg_output: list<any>, cmd: string, bang: bool): list<any> #{{{2
+def Convert( #{{{2
+    arg_output: list<any>,
+    cmd: string,
+    bang: bool
+): list<any>
+
     var output: list<any>
     if cmd == 'args' || cmd == 'changes'
         output = arg_output
@@ -397,7 +409,7 @@ def Convert(arg_output: list<any>, cmd: string, bang: bool): list<any> #{{{2
                     lnum: v.pos[1],
                     col: v.pos[2],
                     text: v.mark .. '  ' .. getbufline(v.pos[0], v.pos[1])[0],
-                    }))
+            }))
 
     # `:Marks`  → global marks only
     elseif cmd == 'marks' && !bang
@@ -410,7 +422,7 @@ def Convert(arg_output: list<any>, cmd: string, bang: bool): list<any> #{{{2
             ->mapnew((_, v: string): dict<string> => ({
                         text: v[0] .. '  ' .. matchstr(v, ':\zs.*')->fnamemodify(':t'),
                         filename: matchstr(v, ':\zs.*')->expand(),
-                        }))
+            }))
 
         output = arg_output
             ->map((_, v: dict<any>): dict<any> => ({
@@ -418,7 +430,7 @@ def Convert(arg_output: list<any>, cmd: string, bang: bool): list<any> #{{{2
                     filename: v.file,
                     lnum: v.pos[1],
                     col: v.pos[2],
-                    }))
+            }))
         enriched_bookmarks += output
         return enriched_bookmarks
 
@@ -428,14 +440,14 @@ def Convert(arg_output: list<any>, cmd: string, bang: bool): list<any> #{{{2
                         filename: expand('%:p'),
                         lnum: matchstr(v, '^\s*\zs\d\+')->str2nr(),
                         text: matchstr(v, '^\s*\d\+\s\zs.*'),
-                        }))
+            }))
 
     elseif cmd == 'oldfiles'
         output = arg_output
             ->mapnew((_, v: string): dict<string> => ({
                         filename: matchstr(v, '^\d\+:\s\zs.*')->expand(),
                         text: matchstr(v, '^\d\+:\s\zs.*')->fnamemodify(':t'),
-                        }))
+            }))
 
     elseif cmd == 'registers'
         # Do *not* use the `filename` key to store the name of the registers.{{{
