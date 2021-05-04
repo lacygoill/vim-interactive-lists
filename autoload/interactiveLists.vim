@@ -127,8 +127,8 @@ def interactiveLists#allmatchesinbuffer() #{{{2
         #
         # Yes, but it's more complicated:
         #
-        #     if &bt == 'quickfix'
-        #         w:quickfix_title = ':' .. matchstr(w:quickfix_title, ':\s*\zs\S.*')
+        #     if &buftype == 'quickfix'
+        #         w:quickfix_title = ':' .. w:quickfix_title->matchstr(':\s*\zs\S.*')
         #     endif
         #}}}
         exe 'lvim //gj %'
@@ -136,7 +136,7 @@ def interactiveLists#allmatchesinbuffer() #{{{2
         #            └ don't jump to the first entry;
         #              stay in the qf window
         lwindow
-        if &bt == 'quickfix'
+        if &buftype == 'quickfix'
             sil! qf#setMatches('vimrc:allMatchesInBuffer', 'Conceal', 'location')
             sil! qf#createMatches()
         endif
@@ -147,7 +147,7 @@ def interactiveLists#allmatchesinbuffer() #{{{2
         win_gotoid(id)
         winrestview(view)
     endtry
-    if winnr('#')->winbufnr()->getbufvar('&bt', '') == 'quickfix'
+    if winnr('#')->winbufnr()->getbufvar('&buftype', '') == 'quickfix'
         wincmd p
     endif
 enddef
@@ -228,7 +228,7 @@ def Capture(cmd: string, bang: bool): list<any> #{{{2
         list = argv()
             ->mapnew((_, v: string): dict<string> => ({
                 filename: v,
-                text: fnamemodify(v, ':t'),
+                text: v->fnamemodify(':t'),
             }))
 
     elseif cmd == 'changes'
@@ -283,7 +283,7 @@ def CaptureCmdLocalToWindow(cmd: string, pat: string): list<any> #{{{2
 
     if cmd == 'jumps'
         var jumplist: list<any>
-        if &bt == 'quickfix'
+        if &buftype == 'quickfix'
             noa QfOpenOrFocus('loc')
             jumplist = getjumplist()
                      ->get(0, [])
@@ -308,7 +308,7 @@ def CaptureCmdLocalToWindow(cmd: string, pat: string): list<any> #{{{2
 
     elseif cmd == 'changes'
         var changelist: list<any>
-        if &bt == 'quickfix'
+        if &buftype == 'quickfix'
             noa QfOpenOrFocus('loc')
             changelist = getchangelist('%')->get(0, [])
             var bufnr: number = bufnr('%')
@@ -420,13 +420,13 @@ def Convert( #{{{2
 
         var enriched_bookmarks: list<dict<any>> = bookmarks
             ->mapnew((_, v: string): dict<string> => ({
-                        text: v[0] .. '  ' .. matchstr(v, ':\zs.*')->fnamemodify(':t'),
-                        filename: matchstr(v, ':\zs.*')->expand(),
+                        text: v[0] .. '  ' .. v->matchstr(':\zs.*')->fnamemodify(':t'),
+                        filename: v->matchstr(':\zs.*')->expand(),
             }))
 
         output = arg_output
             ->map((_, v: dict<any>): dict<any> => ({
-                    text: v.mark[1] .. '  ' .. fnamemodify(v.file, ':t'),
+                    text: v.mark[1] .. '  ' .. v.file->fnamemodify(':t'),
                     filename: v.file,
                     lnum: v.pos[1],
                     col: v.pos[2],
@@ -438,15 +438,15 @@ def Convert( #{{{2
         output = arg_output
             ->mapnew((_, v: string): dict<any> => ({
                         filename: expand('%:p'),
-                        lnum: matchstr(v, '^\s*\zs\d\+')->str2nr(),
-                        text: matchstr(v, '^\s*\d\+\s\zs.*'),
+                        lnum: v->matchstr('^\s*\zs\d\+')->str2nr(),
+                        text: v->matchstr('^\s*\d\+\s\zs.*'),
             }))
 
     elseif cmd == 'oldfiles'
         output = arg_output
             ->mapnew((_, v: string): dict<string> => ({
-                        filename: matchstr(v, '^\d\+:\s\zs.*')->expand(),
-                        text: matchstr(v, '^\d\+:\s\zs.*')->fnamemodify(':t'),
+                        filename: v->matchstr('^\d\+:\s\zs.*')->expand(),
+                        text: v->matchstr('^\d\+:\s\zs.*')->fnamemodify(':t'),
             }))
 
     elseif cmd == 'registers'
