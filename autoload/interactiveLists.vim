@@ -95,7 +95,7 @@ def interactiveLists#allmatchesinbuffer() #{{{2
         #
         #     " press:  cd
         #     :lopen
-        #     title = ':lvim /./ %'    ✔~
+        #     title = ':lvim /./ %'    ✔˜
         #
         #     nno cd <cmd>call Func()<cr>
         #     fu Func() abort
@@ -104,10 +104,10 @@ def interactiveLists#allmatchesinbuffer() #{{{2
         #     endfu
         #
         #     " press:  cd
-        #     title = ':    lvim /./ %'~
+        #     title = ':    lvim /./ %'˜
         #               ^--^
-        #               ✘ because `:lvim` is executed from a line~
-        #                 with a level of indentation of 4 spaces~
+        #               ✘ because `:lvim` is executed from a line˜
+        #                 with a level of indentation of 4 spaces˜
         #
         #     nno cd <cmd>call Func()<cr>
         #     fu Func() abort
@@ -118,10 +118,10 @@ def interactiveLists#allmatchesinbuffer() #{{{2
         #     endfu
         #
         #     " press:  cd
-        #     title = ':        lvim /./ %'~
+        #     title = ':        lvim /./ %'˜
         #               ^------^
-        #                ✘ because `:lvim` is executed from a line~
-        #                  with a level of indentation of 8 spaces~
+        #                ✘ because `:lvim` is executed from a line˜
+        #                  with a level of indentation of 8 spaces˜
         #}}}
         #   Is there an alternative?{{{
         #
