@@ -91,25 +91,25 @@ def interactiveLists#allmatchesinbuffer() #{{{2
         #
         # MWE:
         #
-        #     :nno cd <cmd>lvim /./ % <bar> lopen<cr>
+        #     :nno <F3> <cmd>lvim /./ % <bar> lopen<cr>
         #
-        #     " press:  cd
+        #     " press:  F3
         #     :lopen
         #     title = ':lvim /./ %'    ✔˜
         #
-        #     nno cd <cmd>call Func()<cr>
+        #     nno <F3> <cmd>call Func()<cr>
         #     fu Func() abort
         #         lvim /./ %
         #         lopen
         #     endfu
         #
-        #     " press:  cd
+        #     " press:  F3
         #     title = ':    lvim /./ %'˜
         #               ^--^
         #               ✘ because `:lvim` is executed from a line˜
         #                 with a level of indentation of 4 spaces˜
         #
-        #     nno cd <cmd>call Func()<cr>
+        #     nno <F3> <cmd>call Func()<cr>
         #     fu Func() abort
         #         try
         #             lvim /./ %
@@ -117,7 +117,7 @@ def interactiveLists#allmatchesinbuffer() #{{{2
         #         endtry
         #     endfu
         #
-        #     " press:  cd
+        #     " press:  F3
         #     title = ':        lvim /./ %'˜
         #               ^------^
         #                ✘ because `:lvim` is executed from a line˜
@@ -153,13 +153,9 @@ def interactiveLists#allmatchesinbuffer() #{{{2
 enddef
 
 def interactiveLists#setorgotomark(action: string) #{{{2
-    var c: any = getchar()
-    if typename(c) != 'number'
-        return
-    endif
     # ask for a mark
-    var mark: string = nr2char(c)
-    if mark == "\e"
+    var mark: string = getcharstr()
+    if mark == "\e" || mark->strlen() > 1
         return
     endif
 
@@ -382,8 +378,8 @@ def Convert( #{{{2
                                !buflisted(v) ? 'u' : ' ',
                                v == bufnr('%') ? '%' : v == bufnr('#') ? '#' : ' ',
                                win_findbuf(v)->empty() ? 'h' : 'a',
-                               getbufvar(v, '&ma', 0) ? ' ' : '-',
-                               getbufvar(v, '&mod', 0) ? '+' : ' ',
+                               getbufvar(v, '&modifiable', false) ? ' ' : '-',
+                               getbufvar(v, '&modified', false) ? '+' : ' ',
                                bufname(v)->empty()
                                  ?    '[No Name]'
                                  :     bufname(v)->fnamemodify(':t'))
@@ -461,7 +457,7 @@ def Convert( #{{{2
         # We pass `1` as a 2nd argument to `getreg()`.
         # It's ignored  for most registers,  but useful for the  expression register.
         # It allows to get the expression  itself, not its current value which could
-        # not exist anymore (ex: arg)
+        # not exist anymore (e.g.: arg)
         output->map((_, v: dict<string>): dict<string> =>
                         extend(v, {
                                     text: v.text .. '    ' .. getreg(v.text, true)
