@@ -3,7 +3,7 @@ vim9script noclear
 if exists('loaded') | finish | endif
 var loaded = true
 
-# TODO: Use `:h  quickfix-window-function` to get rid  of `qf#setMatches()` and
+# TODO: Use `:help  quickfix-window-function` to get rid  of `qf#setMatches()` and
 # `qf#createMatches()`.
 
 import Catch from 'lg.vim'
@@ -19,7 +19,7 @@ def interactiveLists#main(cmd: string, bang = false): string #{{{2
         endif
         var output: list<any> = Capture(cmd, bang)
         if cmd == 'number' && get(output, 0, '') =~ '^Pattern not found:'
-            timer_start(0, (_) => feedkeys("\<cr>", 'in'))
+            timer_start(0, (_) => feedkeys("\<CR>", 'in'))
             Error('Pattern not found')
         endif
         var list: list<any> = Convert(output, cmd, bang)
@@ -53,7 +53,7 @@ def interactiveLists#main(cmd: string, bang = false): string #{{{2
         if cmd == 'number'
             timer_start(0, (_) => {
                 OpenQf('number')
-                feedkeys("\e", 'in')
+                feedkeys("\<Esc>", 'in')
             })
         else
             OpenQf(cmd)
@@ -68,19 +68,19 @@ enddef
 
 def Error(msg: string)
     echohl ErrorMsg
-    echom msg
+    echomsg msg
     echohl NONE
 enddef
 
 def interactiveLists#allmatchesinbuffer() #{{{2
     # Alternative:
     #
-    #     keepj g//#
+    #     keepjumps global//number
 
     var id: number = win_getid()
     var view: dict<number> = winsaveview()
     try
-        # Why `:exe`?{{{
+        # Why `:execute`?{{{
         #
         # It removes excessive spaces in the title of the qf window, between the
         # colon and the rest of the command.
@@ -91,36 +91,36 @@ def interactiveLists#allmatchesinbuffer() #{{{2
         #
         # MWE:
         #
-        #     :nno <F3> <cmd>lvim /./ % <bar> lopen<cr>
+        #     :nnoremap <F3> <Cmd>lvimgrep /./ % <Bar> lopen<CR>
         #
         #     " press:  F3
         #     :lopen
-        #     title = ':lvim /./ %'    ✔˜
+        #     title = ':lvimgrep /./ %'    ✔˜
         #
-        #     nno <F3> <cmd>call Func()<cr>
-        #     fu Func() abort
-        #         lvim /./ %
+        #     nnoremap <F3> <Cmd>call Func()<CR>
+        #     function Func() abort
+        #         lvimgrep /./ %
         #         lopen
-        #     endfu
+        #     endfunction
         #
         #     " press:  F3
-        #     title = ':    lvim /./ %'˜
+        #     title = ':    lvimgrep /./ %'˜
         #               ^--^
-        #               ✘ because `:lvim` is executed from a line˜
+        #               ✘ because `:lvimgrep` is executed from a line˜
         #                 with a level of indentation of 4 spaces˜
         #
-        #     nno <F3> <cmd>call Func()<cr>
-        #     fu Func() abort
+        #     nnoremap <F3> <Cmd>call Func()<CR>
+        #     function Func() abort
         #         try
-        #             lvim /./ %
+        #             lvimgrep /./ %
         #             lopen
         #         endtry
-        #     endfu
+        #     endfunction
         #
         #     " press:  F3
-        #     title = ':        lvim /./ %'˜
+        #     title = ':        lvimgrep /./ %'˜
         #               ^------^
-        #                ✘ because `:lvim` is executed from a line˜
+        #                ✘ because `:lvimgrep` is executed from a line˜
         #                  with a level of indentation of 8 spaces˜
         #}}}
         #   Is there an alternative?{{{
@@ -131,14 +131,11 @@ def interactiveLists#allmatchesinbuffer() #{{{2
         #         w:quickfix_title = ':' .. w:quickfix_title->matchstr(':\s*\zs\S.*')
         #     endif
         #}}}
-        exe 'lvim //gj %'
-        #            │
-        #            └ don't jump to the first entry;
-        #              stay in the qf window
+        execute 'lvimgrep //gj %'
         lwindow
         if &buftype == 'quickfix'
-            sil! qf#setMatches('vimrc:allMatchesInBuffer', 'Conceal', 'location')
-            sil! qf#createMatches()
+            silent! qf#setMatches('vimrc:allMatchesInBuffer', 'Conceal', 'location')
+            silent! qf#createMatches()
         endif
     catch
         Catch()
@@ -155,7 +152,7 @@ enddef
 def interactiveLists#setorgotomark(action: string) #{{{2
     # ask for a mark
     var mark: string = getcharstr()
-    if mark == "\e" || mark->strlen() > 1
+    if mark == "\<Esc>" || mark->strlen() > 1
         return
     endif
 
@@ -202,12 +199,11 @@ def interactiveLists#setorgotomark(action: string) #{{{2
             return
         endif
         var path: string = lpath[0][2 :]
-        exe 'e ' .. path
+        execute 'edit ' .. path
         # '. may not exist
         try
-            sil! norm! g`.zvzz
-            #  │
-            #  └ E20: mark not set
+            # bang to suppress `:help E20` (mark not set)
+            silent! normal! g`.zvzz
         catch
             Catch()
             return
@@ -250,11 +246,12 @@ def Capture(cmd: string, bang: bool): list<any> #{{{2
 
     elseif cmd == 'number'
         var pos: list<number> = getcurpos()
-        list = execute('keepj ' .. getcmdline()->substitute('#$', 'number', ''))->split('\n')
+        list = execute('keepjumps ' .. getcmdline()->substitute('#$', 'number', ''))
+            ->split('\n')
         setpos('.', pos)
 
     elseif cmd == 'oldfiles'
-        list = execute('old')->split('\n')
+        list = execute('oldfiles')->split('\n')
 
     elseif cmd == 'registers'
         list =<< trim END
@@ -280,7 +277,7 @@ def CaptureCmdLocalToWindow(cmd: string, pat: string): list<any> #{{{2
     if cmd == 'jumps'
         var jumplist: list<any>
         if &buftype == 'quickfix'
-            noa QfOpenOrFocus('loc')
+            noautocmd QfOpenOrFocus('loc')
             jumplist = getjumplist()
                      ->get(0, [])
                      ->mapnew((_, v: dict<number>): dict<any> =>
@@ -289,7 +286,7 @@ def CaptureCmdLocalToWindow(cmd: string, pat: string): list<any> #{{{2
                                               ?     getline(v.lnum)
                                               :     bufname(v.bufnr)
                                              }))
-            noa wincmd p
+            noautocmd wincmd p
             return jumplist
         else
             return getjumplist()
@@ -305,7 +302,7 @@ def CaptureCmdLocalToWindow(cmd: string, pat: string): list<any> #{{{2
     elseif cmd == 'changes'
         var changelist: list<any>
         if &buftype == 'quickfix'
-            noa QfOpenOrFocus('loc')
+            noautocmd QfOpenOrFocus('loc')
             changelist = getchangelist('%')->get(0, [])
             var bufnr: number = bufnr('%')
             for i in changelist->len()->range()
@@ -314,7 +311,7 @@ def CaptureCmdLocalToWindow(cmd: string, pat: string): list<any> #{{{2
                     bufnr: bufnr,
                 })
             endfor
-            noa wincmd p
+            noautocmd wincmd p
         else
             changelist = getchangelist('%')->get(0, [])
             var bufnr: number = bufnr('%')
@@ -476,7 +473,7 @@ def OpenQf(cmd: string) #{{{2
     #
     # So,  we just  emit the  event `QuickFixCmdPost`.  `vim-qf` has  an autocmd
     # listening to it.
-    do <nomodeline> QuickFixCmdPost lopen
+    doautocmd <nomodeline> QuickFixCmdPost lopen
 
     var pat: string = {
         args:      '.*|\s*|\s*',
@@ -489,11 +486,11 @@ def OpenQf(cmd: string) #{{{2
         registers: '^\s*|\s*|\s*',
         }[cmd]
 
-    sil! qf#setMatches('interactive_lists:OpenQf', 'Conceal', pat)
+    silent! qf#setMatches('interactive_lists:OpenQf', 'Conceal', pat)
 
     if cmd == 'registers'
-        sil! qf#setMatches('interactive_lists:OpenQf', 'qfFileName', '^\s*|\s*|\s\zs\S\+')
+        silent! qf#setMatches('interactive_lists:OpenQf', 'qfFileName', '^\s*|\s*|\s\zs\S\+')
     endif
-    sil! qf#createMatches()
+    silent! qf#createMatches()
 enddef
 

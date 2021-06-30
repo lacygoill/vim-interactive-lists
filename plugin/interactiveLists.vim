@@ -23,24 +23,24 @@ var loaded = true
 #                       `:ilist` doesn't add anchors (\<, \>)
 #                       contrary to the default `:ilist`
 #}}}
-nno <unique> g:: <cmd>call interactiveLists#allmatchesinbuffer()<cr>
+nnoremap <unique> g:: <Cmd>call interactiveLists#allmatchesinbuffer()<CR>
 
-nno <unique> g:a <cmd>call interactiveLists#main('args')<cr>
-nno <unique> g:c <cmd>call interactiveLists#main('changes')<cr>
-nno <unique> g:j <cmd>call interactiveLists#main('jumps')<cr>
-nno <unique> g:l <cmd>call interactiveLists#main('ls')<cr>
-nno <unique> g:L <cmd>call interactiveLists#main('ls', v:true)<cr>
-nno <unique> g:m <cmd>call interactiveLists#main('marks')<cr>
-nno <unique> g:M <cmd>call interactiveLists#main('marks', v:true)<cr>
-nno <unique> g:o <cmd>call interactiveLists#main('oldfiles')<cr>
-nno <unique> g:r <cmd>call interactiveLists#main('registers')<cr>
+nnoremap <unique> g:a <Cmd>call interactiveLists#main('args')<CR>
+nnoremap <unique> g:c <Cmd>call interactiveLists#main('changes')<CR>
+nnoremap <unique> g:j <Cmd>call interactiveLists#main('jumps')<CR>
+nnoremap <unique> g:l <Cmd>call interactiveLists#main('ls')<CR>
+nnoremap <unique> g:L <Cmd>call interactiveLists#main('ls', v:true)<CR>
+nnoremap <unique> g:m <Cmd>call interactiveLists#main('marks')<CR>
+nnoremap <unique> g:M <Cmd>call interactiveLists#main('marks', v:true)<CR>
+nnoremap <unique> g:o <Cmd>call interactiveLists#main('oldfiles')<CR>
+nnoremap <unique> g:r <Cmd>call interactiveLists#main('registers')<CR>
 
-cno <unique> <c-\>n <c-\>e interactiveLists#main('number')<cr>
+cnoremap <unique> <C-\>n <C-\>e interactiveLists#main('number')<CR>
 
 # Why?{{{
 #
-# When we load a buffer, we have an autocmd (`:au jump_last_position`) which
-# moves the cursor to the last edit performed in that buffer.
+# When  we load  a buffer,  we have  an autocmd  (`:autocmd jump_last_position`)
+# which moves the cursor to the last edit performed in that buffer.
 # Unfortunately, it doesn't work when we load a file with a global mark.
 # Indeed, the global mark contains several info (`:marks`):
 #
@@ -67,5 +67,5 @@ cno <unique> <c-\>n <c-\>e interactiveLists#main('number')<cr>
 # Don't rely on the existing mechanism, it's fucked up beyond any repair.
 # Don't even rely on `~/.viminfo`.  It's another can of worms.
 #}}}
-nno <unique> m <cmd>call interactiveLists#setorgotomark('set')<cr>
-nno <unique> ' <cmd>call interactiveLists#setorgotomark('go')<cr>
+nnoremap <unique> m <Cmd>call interactiveLists#setorgotomark('set')<CR>
+nnoremap <unique> ' <Cmd>call interactiveLists#setorgotomark('go')<CR>
