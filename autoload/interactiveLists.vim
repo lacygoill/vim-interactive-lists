@@ -1,8 +1,5 @@
 vim9script noclear
 
-if exists('loaded') | finish | endif
-var loaded = true
-
 # TODO: Use `:help  quickfix-window-function` to get rid  of `qf#setMatches()` and
 # `qf#createMatches()`.
 
@@ -91,37 +88,24 @@ def interactiveLists#allmatchesinbuffer() #{{{2
         #
         # MWE:
         #
-        #     :nnoremap <F3> <Cmd>lvimgrep /./ % <Bar> lopen<CR>
+        #     silent help
+        #     lvimgrep /pat/ %
+        #     lopen
+        #     echo w:quickfix_title
+        #     :lvimgrep /pat/ ...˜
+        #     ✔
         #
-        #     " press:  F3
-        #     :lopen
-        #     title = ':lvimgrep /./ %'    ✔˜
-        #
-        #     nnoremap <F3> <Cmd>call Func()<CR>
-        #     function Func() abort
-        #         lvimgrep /./ %
+        #     def Func()
+        #         silent help
+        #         lvimgrep /pat/ %
         #         lopen
-        #     endfunction
-        #
-        #     " press:  F3
-        #     title = ':    lvimgrep /./ %'˜
+        #         echo w:quickfix_title
+        #     enddef
+        #     Func()
+        #     title = ':    lvimgrep /pat/ ...'˜
         #               ^--^
         #               ✘ because `:lvimgrep` is executed from a line˜
         #                 with a level of indentation of 4 spaces˜
-        #
-        #     nnoremap <F3> <Cmd>call Func()<CR>
-        #     function Func() abort
-        #         try
-        #             lvimgrep /./ %
-        #             lopen
-        #         endtry
-        #     endfunction
-        #
-        #     " press:  F3
-        #     title = ':        lvimgrep /./ %'˜
-        #               ^------^
-        #                ✘ because `:lvimgrep` is executed from a line˜
-        #                  with a level of indentation of 8 spaces˜
         #}}}
         #   Is there an alternative?{{{
         #
@@ -397,7 +381,7 @@ def Convert( #{{{2
     # `:Marks!` → local marks only
     elseif cmd == 'marks' && bang
         output = arg_output
-            ->map((_, v: dict<any>): dict<any> => ({
+            ->map((_, v: dict<any>) => ({
                     bufnr: v.pos[0],
                     lnum: v.pos[1],
                     col: v.pos[2],
@@ -418,7 +402,7 @@ def Convert( #{{{2
             }))
 
         output = arg_output
-            ->map((_, v: dict<any>): dict<any> => ({
+            ->map((_, v: dict<any>) => ({
                     text: v.mark[1] .. '  ' .. v.file->fnamemodify(':t'),
                     filename: v.file,
                     lnum: v.pos[1],
@@ -455,7 +439,7 @@ def Convert( #{{{2
         # It's ignored  for most registers,  but useful for the  expression register.
         # It allows to get the expression  itself, not its current value which could
         # not exist anymore (e.g.: arg)
-        output->map((_, v: dict<string>): dict<string> =>
+        output->map((_, v: dict<string>) =>
                         extend(v, {
                                     text: v.text .. '    ' .. getreg(v.text, true)
                                   }))
@@ -486,10 +470,10 @@ def OpenQf(cmd: string) #{{{2
         registers: '^\s*|\s*|\s*',
         }[cmd]
 
-    silent! qf#setMatches('interactive_lists:OpenQf', 'Conceal', pat)
+    silent! qf#setMatches('interactive-lists:OpenQf', 'Conceal', pat)
 
     if cmd == 'registers'
-        silent! qf#setMatches('interactive_lists:OpenQf', 'qfFileName', '^\s*|\s*|\s\zs\S\+')
+        silent! qf#setMatches('interactive-lists:OpenQf', 'qfFileName', '^\s*|\s*|\s\zs\S\+')
     endif
     silent! qf#createMatches()
 enddef
