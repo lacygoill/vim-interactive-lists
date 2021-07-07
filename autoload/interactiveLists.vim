@@ -289,7 +289,7 @@ def CaptureCmdLocalToWindow(cmd: string, pat: string): list<any> #{{{2
             noautocmd QfOpenOrFocus('loc')
             changelist = getchangelist('%')->get(0, [])
             var bufnr: number = bufnr('%')
-            for i in changelist->len()->range()
+            for i: number in changelist->len()->range()
                 changelist[i] = extendnew(changelist[i], {
                     text: getline(changelist[i]['lnum']),
                     bufnr: bufnr,
@@ -299,7 +299,7 @@ def CaptureCmdLocalToWindow(cmd: string, pat: string): list<any> #{{{2
         else
             changelist = getchangelist('%')->get(0, [])
             var bufnr: number = bufnr('%')
-            for i in changelist->len()->range()
+            for i: number in changelist->len()->range()
                 # Do *not* try to replace `changelist[i]` with a variable name.{{{
                 #
                 # You could  be tempted to  use it everywhere, including  in the
